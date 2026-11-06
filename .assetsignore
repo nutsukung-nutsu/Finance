@@ -1,6 +1,7 @@
-wrangler.jsonc
-.assetsignore
 .git/
 .git/**
 index.txt
 public/**
+supabase/**
+wrangler.jsonc
+.assetsignore

@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบรายรับ-รายจ่าย ของนัสซึคุง คุณชายสายเสมอ</title>
 
-    <!-- เชื่อมต่อล่วงหน้ากับเซิร์ฟเวอร์ Apps Script เพื่อดึงข้อมูลจาก Google Sheet ได้เร็วขึ้นตั้งแต่โหลดหน้าแรก -->
-    <link rel="preconnect" href="https://script.google.com">
-    <link rel="dns-prefetch" href="https://script.google.com">
-    <link rel="preconnect" href="https://script.googleusercontent.com">
-
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -119,10 +114,10 @@
 
             <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="field-label"><i class="fas fa-user" style="color:#ec4899"></i> ชื่อผู้ใช้</label>
+                    <label class="field-label"><i class="fas fa-envelope" style="color:#ec4899"></i> อีเมล</label>
                     <div class="field-wrap">
-                        <i class="fas fa-user field-ico text-gray-400"></i>
-                        <input id="loginUsername" type="text" class="inp" placeholder="ชื่อผู้ใช้" autocomplete="username" required>
+                        <i class="fas fa-envelope field-ico text-gray-400"></i>
+                        <input id="loginEmail" type="email" class="inp" placeholder="อีเมล" autocomplete="username" required>
                     </div>
                 </div>
                 <div>
@@ -607,11 +602,18 @@
         </div>
     </main>
 
+    <script src="./supabase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         Chart.register(ChartDataLabels);
 
-        // >>> URL Deployment ของ Apps Script <<<
-        const API_URL = "https://script.google.com/macros/s/AKfycbwqPGDlX03FBdWESw5Op9NETsQeEIjDB1z3s_rC69PEws-vgv9MdIC2-35i5XTWB0tu1A/exec";
+        const SUPABASE_URL = window.SUPABASE_URL || '';
+        const SUPABASE_PUBLISHABLE_KEY = window.SUPABASE_PUBLISHABLE_KEY || '';
+        const supabaseConfigured = /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(SUPABASE_URL) &&
+            SUPABASE_PUBLISHABLE_KEY && !SUPABASE_PUBLISHABLE_KEY.includes('YOUR_');
+        const supabaseClient = supabaseConfigured && window.supabase
+            ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+            : null;
 
         // >>> ลิงก์ไฟล์ .apk (อัปโหลดไฟล์ไว้ใน Google Drive แล้วแชร์แบบ "ทุกคนที่มีลิงก์") <<<
         // รูปแบบลิงก์ดาวน์โหลดตรง: https://drive.google.com/uc?export=download&id=FILE_ID
@@ -636,28 +638,12 @@
         const COLOR_SET = ['#10b981','#22c55e','#84cc16','#f59e0b','#f97316','#ef4444','#f43f5e','#ec4899','#d946ef','#a855f7','#8b5cf6','#6366f1','#3b82f6','#0ea5e9','#06b6d4','#14b8a6','#64748b','#111827'];
 
         // ---------- ระบบลงชื่อเข้าใช้งาน (Auth) ----------
-        const AUTH_STORAGE_KEY = 'natsu_auth_session_v1';
-        let authSession = null; // { token, username, role }
-
-        function loadAuthSession() {
-            try {
-                const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-                authSession = raw ? JSON.parse(raw) : null;
-            } catch (e) { authSession = null; }
-        }
-        function saveAuthSession(session) {
-            authSession = session;
-            try { localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session)); } catch (e) { /* เพิกเฉยได้ */ }
-        }
-        function clearAuthSession() {
-            authSession = null;
-            try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch (e) { /* เพิกเฉยได้ */ }
-        }
+        let authSession = null;
         function showAppScreen() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('appHeader').classList.remove('hidden');
             document.getElementById('appMain').classList.remove('hidden');
-            document.getElementById('currentUserLabel').innerText = authSession ? authSession.username : 'ผู้ใช้';
+            document.getElementById('currentUserLabel').innerText = authSession ? authSession.email : 'ผู้ใช้';
         }
         function showLoginScreen() {
             document.getElementById('loginScreen').classList.remove('hidden');
@@ -677,30 +663,26 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            const username = document.getElementById('loginUsername').value.trim();
+            const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             const errBox = document.getElementById('loginErrorMsg');
             errBox.classList.add('hidden');
-            if (!username || !password) return;
+            if (!email || !password) return;
 
             const btn = document.querySelector('#loginForm button[type="submit"]');
             const originalHtml = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> กำลังตรวจสอบ...';
             try {
-                const res = await callServer('login', { username: username, password: password }, true);
-                if (res && res.success) {
-                    saveAuthSession({ token: res.token, username: res.username, role: res.role });
-                    document.getElementById('loginPassword').value = '';
-                    showAppScreen();
-                    loadCachedData();
-                    loadServerData();
-                } else {
-                    errBox.innerText = (res && res.message) || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
-                    errBox.classList.remove('hidden');
-                }
+                if (!supabaseClient) throw new Error('ยังไม่ได้ตั้งค่า Supabase กรุณาตรวจสอบไฟล์ public/supabase-config.js');
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+                if (error) throw error;
+                authSession = data.user;
+                document.getElementById('loginPassword').value = '';
+                showAppScreen();
+                await loadServerData();
             } catch (error) {
-                errBox.innerText = error.message || 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
+                errBox.innerText = error.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
                 errBox.classList.remove('hidden');
             } finally {
                 btn.disabled = false;
@@ -708,12 +690,14 @@
             }
         }
 
-        function handleLogout(skipServerCall) {
-            // เรียกแจ้งเซิร์ฟเวอร์ให้ลบเซสชันก่อน (ต้องเรียกก่อนล้าง authSession เพราะ callServer ใช้ token จากตัวแปรนี้)
-            if (!skipServerCall && authSession && authSession.token) {
-                callServer('logout', {}, true).catch(function () { /* เพิกเฉยได้ ล็อกเอาต์ฝั่งไคลเอนต์แล้วอยู่ดี */ });
+        async function handleLogout() {
+            if (supabaseClient) {
+                try { await supabaseClient.auth.signOut({ scope: 'local' }); }
+                catch (error) { console.warn('ออกจากระบบฝั่งเซิร์ฟเวอร์ไม่สำเร็จ:', error); }
             }
-            clearAuthSession();
+            authSession = null;
+            transactions = [];
+            categories = { income: [], expense: [] };
             showLoginScreen();
             document.getElementById('loginForm').reset();
         }
@@ -726,7 +710,7 @@
                     '<div style="text-align:left;font-size:14px">' +
                         '<label class="block text-xs font-semibold text-gray-600 mb-1">รหัสผ่านเดิม</label>' +
                         '<input id="cp-old" type="password" class="inp mb-3" autocomplete="current-password">' +
-                        '<label class="block text-xs font-semibold text-gray-600 mb-1">รหัสผ่านใหม่ (อย่างน้อย 4 ตัวอักษร)</label>' +
+                        '<label class="block text-xs font-semibold text-gray-600 mb-1">รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)</label>' +
                         '<input id="cp-new" type="password" class="inp mb-3" autocomplete="new-password">' +
                         '<label class="block text-xs font-semibold text-gray-600 mb-1">ยืนยันรหัสผ่านใหม่</label>' +
                         '<input id="cp-confirm" type="password" class="inp" autocomplete="new-password">' +
@@ -741,7 +725,7 @@
                     const newPass = document.getElementById('cp-new').value;
                     const confirmPass = document.getElementById('cp-confirm').value;
                     if (!oldPass || !newPass || !confirmPass) { Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบทุกช่อง'); return false; }
-                    if (newPass.length < 4) { Swal.showValidationMessage('รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร'); return false; }
+                    if (newPass.length < 6) { Swal.showValidationMessage('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร'); return false; }
                     if (newPass !== confirmPass) { Swal.showValidationMessage('รหัสผ่านใหม่และการยืนยันไม่ตรงกัน'); return false; }
                     return { oldPass: oldPass, newPass: newPass };
                 }
@@ -749,10 +733,9 @@
                 if (!result.isConfirmed) return;
                 Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
                 try {
-                    const res = await callServer('changePassword', { oldPassword: result.value.oldPass, newPassword: result.value.newPass });
-                    if (res.success) {
-                        Swal.fire({ title: 'เปลี่ยนรหัสผ่านสำเร็จ', icon: 'success', timer: 1600, showConfirmButton: false });
-                    } else throw new Error(res.message || 'เปลี่ยนรหัสผ่านไม่สำเร็จ');
+                    const { error } = await supabaseClient.auth.updateUser({ password: result.value.newPass, current_password: result.value.oldPass });
+                    if (error) throw error;
+                    Swal.fire({ title: 'เปลี่ยนรหัสผ่านสำเร็จ', icon: 'success', timer: 1600, showConfirmButton: false });
                 } catch (e) {
                     Swal.fire('ข้อผิดพลาด', e.message || 'ไม่ทราบสาเหตุ', 'error');
                 }
@@ -845,17 +828,34 @@
             document.body.removeChild(ta);
         }
         // ---------- Init ----------
-        // ตรวจสอบก่อนว่าเคยลงชื่อเข้าใช้งานไว้หรือไม่ (มี token เก็บอยู่ใน localStorage)
-        // ถ้ามี ให้เข้าหน้าแอปเลยแล้วค่อยซิงก์ข้อมูลจาก Google Sheet ทันที เพื่อความเร็วในการโหลดหน้าเว็บ
-        // ถ้ายังไม่เคยเข้าสู่ระบบ ให้แสดงหน้าล็อกอินก่อนเสมอ (ระบบจะตรวจสอบ token อีกครั้งที่ฝั่งเซิร์ฟเวอร์ทุกครั้งที่เรียก API)
-        loadAuthSession();
-        if (authSession && authSession.token) {
-            showAppScreen();
-            loadCachedData();
-            loadServerData();
-        } else {
-            showLoginScreen();
+        async function initializeApp() {
+            // ลบ cache และ token ของ Apps Script รุ่นก่อนซึ่งไม่ถูกใช้งานแล้ว
+            localStorage.removeItem('natsu_cached_data_v3');
+            localStorage.removeItem('natsu_auth_session_v1');
+            if (!supabaseClient) {
+                showLoginScreen();
+                const errBox = document.getElementById('loginErrorMsg');
+                errBox.innerText = 'กรุณาตั้งค่า Project URL และ Publishable key ใน public/supabase-config.js ก่อนใช้งาน';
+                errBox.classList.remove('hidden');
+                return;
+            }
+            const { data, error } = await supabaseClient.auth.getSession();
+            if (error) console.warn('ตรวจสอบ session ไม่สำเร็จ:', error.message);
+            authSession = data && data.session ? data.session.user : null;
+            if (authSession) {
+                showAppScreen();
+                loadServerData();
+            } else showLoginScreen();
+            supabaseClient.auth.onAuthStateChange(function (event, session) {
+                authSession = session ? session.user : null;
+                if (event === 'SIGNED_OUT') {
+                    transactions = [];
+                    categories = { income: [], expense: [] };
+                    showLoginScreen();
+                }
+            });
         }
+        initializeApp();
 
         window.onload = function () {
             setupApkUI();
@@ -886,35 +886,16 @@
             const n = document.getElementById('nav-' + tabId); if (n) n.classList.add('active');
         }
 
-        // ---------- Server ----------
-        async function callServer(action, payload, isAuthAction) {
-            payload = payload || {};
-            // แนบ token เซสชันไปกับทุกคำขอเสมอ (ยกเว้น action ล็อกอินเองที่ยังไม่ต้องใช้ token)
-            const body = Object.assign({ action: action, token: authSession ? authSession.token : '' }, payload);
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    redirect: 'follow',
-                    body: JSON.stringify(body),
-                    headers: { 'Content-Type': 'text/plain' }
-                });
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                const textResult = await response.text();
-                let result;
-                try { result = JSON.parse(textResult); }
-                catch (parseError) { throw new Error('เซิร์ฟเวอร์ตอบกลับข้อมูลผิดพลาด'); }
-
-                // ถ้าเซสชันหมดอายุหรือไม่ถูกต้อง ให้บังคับออกจากระบบและกลับไปหน้าล็อกอินทันที
-                if (result && result.authRequired && !isAuthAction) {
-                    handleLogout(true);
-                    Swal.fire('เซสชันหมดอายุ', 'กรุณาเข้าสู่ระบบใหม่อีกครั้ง', 'warning');
-                }
-                return result;
-            } catch (error) {
-                console.warn('API Call Error:', error);
-                // ไม่สลับไปใช้ข้อมูลจำลองเมื่อ API ขัดข้อง ให้แสดงข้อมูลแคชเดิม (ถ้ามี) และแจ้งความผิดพลาด
-                throw new Error('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้: ' + (error && error.message ? error.message : 'unknown error'));
-            }
+        // ---------- Supabase database ----------
+        function requireSignedInUser() {
+            if (!supabaseClient) throw new Error('ยังไม่ได้ตั้งค่า Supabase');
+            if (!authSession || !authSession.id) throw new Error('กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
+            return authSession.id;
+        }
+        function getSupabaseError(error, fallback) {
+            if (!error) return new Error(fallback || 'ดำเนินการไม่สำเร็จ');
+            if (error.code === '23505') return new Error('มีข้อมูลชื่อนี้อยู่แล้ว');
+            return new Error(error.message || fallback || 'ดำเนินการไม่สำเร็จ');
         }
 
         function normalizeTransactions(list) {
@@ -936,6 +917,7 @@
                     const icon = typeof c.icon === 'string' && /^fas fa-[a-z0-9-]+$/i.test(c.icon) ? c.icon : style.icon;
                     const color = typeof c.color === 'string' && /^#[0-9a-f]{6}$/i.test(c.color) ? c.color : style.color;
                     return {
+                        id: c.id || null,
                         name: String(c.name || ''),
                         memos: getMemos(c),
                         icon: icon,
@@ -946,38 +928,31 @@
             return { income: fix(cats && cats.income), expense: fix(cats && cats.expense) };
         }
 
-        function loadCachedData() {
-            const cached = localStorage.getItem('natsu_cached_data_v3');
-            if (cached) {
-                try {
-                    const parsed = JSON.parse(cached);
-                    transactions = normalizeTransactions(parsed.t);
-                    categories = normalizeCategories(parsed.c);
-                    refreshAllViews();
-                } catch (e) { console.warn(e); }
-            }
-        }
-        function saveCache() {
-            localStorage.setItem('natsu_cached_data_v3', JSON.stringify({ t: transactions, c: categories }));
-        }
-
         async function loadServerData() {
+            if (!authSession || !supabaseClient) return;
             showLoader(true, 'กำลังซิงค์ข้อมูลล่าสุด...');
             try {
-                const res = await callServer('getData');
-                if (res.success) {
-                    transactions = normalizeTransactions(res.transactions);
-                    categories = normalizeCategories(res.categories);
-                    saveCache();
-                    refreshAllViews();
-                } else throw new Error(res.message);
+                const userId = requireSignedInUser();
+                const [transactionResult, categoryResult] = await Promise.all([
+                    supabaseClient.from('finance_transactions').select('id,type,transaction_date,amount,category,detail,note,created_at')
+                        .eq('user_id', userId).order('transaction_date', { ascending: false }).order('created_at', { ascending: false }),
+                    supabaseClient.from('finance_categories').select('id,type,name,memos,icon,color')
+                        .eq('user_id', userId).order('name', { ascending: true })
+                ]);
+                if (transactionResult.error) throw getSupabaseError(transactionResult.error, 'โหลดรายการไม่สำเร็จ');
+                if (categoryResult.error) throw getSupabaseError(categoryResult.error, 'โหลดหมวดหมู่ไม่สำเร็จ');
+                transactions = normalizeTransactions((transactionResult.data || []).map(function (row) {
+                    return { id: row.id, type: row.type, date: row.transaction_date, amount: row.amount,
+                        category: row.category, detail: row.detail, note: row.note, timestamp: row.created_at };
+                }));
+                categories = normalizeCategories({
+                    income: (categoryResult.data || []).filter(function (row) { return row.type === 'income'; }),
+                    expense: (categoryResult.data || []).filter(function (row) { return row.type === 'expense'; })
+                });
+                refreshAllViews();
             } catch (error) {
                 console.warn(error);
-                if (transactions.length === 0) {
-                    Swal.fire('โหลดข้อมูลล้มเหลว', 'กรุณาลองรีเฟรชหน้าใหม่อีกครั้ง', 'warning');
-                } else {
-                    Swal.fire('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', 'กำลังแสดงข้อมูลที่เก็บไว้ในเครื่อง ซึ่งอาจไม่ใช่ข้อมูลล่าสุด', 'warning');
-                }
+                Swal.fire('โหลดข้อมูลล้มเหลว', error.message || 'กรุณาตรวจสอบการตั้งค่า Supabase และลองใหม่', 'warning');
             } finally { showLoader(false); }
         }
 
@@ -1380,14 +1355,16 @@
                 const data = result.value;
                 Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
                 try {
-                    const res = await callServer('updateTransaction', { id: t.id, data: data });
-                    if (res.success) {
-                        const i = transactions.findIndex(function (x) { return x.id.toString() === t.id.toString(); });
-                        if (i !== -1) transactions[i] = Object.assign({}, transactions[i], data);
-                        saveCache(); populateYearOptions(); renderDashboard();
-                        Swal.fire({ title: 'แก้ไขสำเร็จ!', icon: 'success', timer: 1500, showConfirmButton: false });
-                    } else throw new Error();
-                } catch (e) { Swal.fire('แก้ไขไม่สำเร็จ', 'การเชื่อมต่อขัดข้อง', 'error'); }
+                    const { error } = await supabaseClient.from('finance_transactions').update({
+                        type: data.type, transaction_date: data.date, amount: Number(data.amount),
+                        category: data.category, detail: data.detail, note: data.note
+                    }).eq('id', t.id).eq('user_id', requireSignedInUser());
+                    if (error) throw getSupabaseError(error, 'แก้ไขรายการไม่สำเร็จ');
+                    const i = transactions.findIndex(function (x) { return x.id.toString() === t.id.toString(); });
+                    if (i !== -1) transactions[i] = Object.assign({}, transactions[i], data, { amount: Number(data.amount) });
+                    populateYearOptions(); renderDashboard();
+                    Swal.fire({ title: 'แก้ไขสำเร็จ!', icon: 'success', timer: 1500, showConfirmButton: false });
+                } catch (e) { Swal.fire('แก้ไขไม่สำเร็จ', e.message || 'ตรวจสอบการเชื่อมต่อ Supabase', 'error'); }
             });
         }
 
@@ -1404,13 +1381,13 @@
                 if (!result.isConfirmed) return;
                 Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
                 try {
-                    const res = await callServer('deleteTransaction', { id: t.id });
-                    if (res.success) {
-                        transactions = transactions.filter(function (x) { return x.id.toString() !== t.id.toString(); });
-                        saveCache(); renderDashboard();
-                        Swal.fire({ title: 'ลบสำเร็จ!', icon: 'success', timer: 1400, showConfirmButton: false });
-                    } else throw new Error();
-                } catch (error) { Swal.fire('ลบไม่สำเร็จ', 'การเชื่อมต่อขัดข้อง', 'error'); }
+                    const { error } = await supabaseClient.from('finance_transactions').delete()
+                        .eq('id', t.id).eq('user_id', requireSignedInUser());
+                    if (error) throw getSupabaseError(error, 'ลบรายการไม่สำเร็จ');
+                    transactions = transactions.filter(function (x) { return x.id.toString() !== t.id.toString(); });
+                    renderDashboard();
+                    Swal.fire({ title: 'ลบสำเร็จ!', icon: 'success', timer: 1400, showConfirmButton: false });
+                } catch (error) { Swal.fire('ลบไม่สำเร็จ', error.message || 'ตรวจสอบการเชื่อมต่อ Supabase', 'error'); }
             });
         }
 
@@ -1589,13 +1566,17 @@
             if (stagedTransactions.length === 0) return;
             Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
             try {
-                const res = await callServer('addTransactionsBatch', { data: stagedTransactions });
-                if (res.success) {
-                    Swal.fire({ title: 'บันทึกสำเร็จ!', text: 'เพิ่มรายการลงฐานข้อมูลเรียบร้อย', icon: 'success', timer: 1600, showConfirmButton: false });
-                    stagedTransactions = [];
-                    renderStagedList(); loadServerData();
-                } else throw new Error();
-            } catch (error) { Swal.fire('บันทึกไม่สำเร็จ', 'กรุณาตรวจสอบการเชื่อมต่อ', 'error'); }
+                const userId = requireSignedInUser();
+                const rows = stagedTransactions.map(function (item) {
+                    return { user_id: userId, type: item.type, transaction_date: item.date,
+                        amount: Number(item.amount), category: item.category, detail: item.detail || '', note: item.note || '' };
+                });
+                const { error } = await supabaseClient.from('finance_transactions').insert(rows);
+                if (error) throw getSupabaseError(error, 'บันทึกรายการไม่สำเร็จ');
+                Swal.fire({ title: 'บันทึกสำเร็จ!', text: 'เพิ่มรายการลงฐานข้อมูลเรียบร้อย', icon: 'success', timer: 1600, showConfirmButton: false });
+                stagedTransactions = [];
+                renderStagedList(); await loadServerData();
+            } catch (error) { Swal.fire('บันทึกไม่สำเร็จ', error.message || 'กรุณาตรวจสอบการเชื่อมต่อ Supabase', 'error'); }
         }
 
         // ---------- ไอคอน & สีของหมวดหมู่ ----------
@@ -1745,15 +1726,16 @@
 
             Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
             try {
-                const res = await callServer('addCategory', { type: type, name: val, memos: memos, icon: icon, color: color });
-                if (res.success) {
-                    categories[type].push({ name: val, memos: memos, icon: icon, color: color });
-                    inputNameEl.value = '';
-                    clearMemoFields(type);
-                    saveCache(); renderCategorySettings(); updateCategoriesDropdown();
-                    Swal.fire({ title: 'เพิ่มหมวดหมู่สำเร็จ', icon: 'success', timer: 1400, showConfirmButton: false });
-                } else throw new Error(res.message || 'บันทึกไม่สำเร็จ');
-            } catch (e) { Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกลง Google Sheet ได้: ' + (e.message || 'ไม่ทราบสาเหตุ'), 'error'); }
+                const { data, error } = await supabaseClient.from('finance_categories').insert({
+                    user_id: requireSignedInUser(), type: type, name: val, memos: memos, icon: icon, color: color
+                }).select('id,type,name,memos,icon,color').single();
+                if (error) throw getSupabaseError(error, 'บันทึกหมวดหมู่ไม่สำเร็จ');
+                categories[type].push(data);
+                inputNameEl.value = '';
+                clearMemoFields(type);
+                renderCategorySettings(); updateCategoriesDropdown();
+                Swal.fire({ title: 'เพิ่มหมวดหมู่สำเร็จ', icon: 'success', timer: 1400, showConfirmButton: false });
+            } catch (e) { Swal.fire('ข้อผิดพลาด', e.message || 'ไม่สามารถบันทึกหมวดหมู่ได้', 'error'); }
         }
 
         window.swalPicker = { icon: 'fas fa-tag', color: '#6366f1' };
@@ -1848,13 +1830,15 @@
                 const v = result.value;
                 Swal.fire({ title: 'กำลังอัปเดต...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
                 try {
-                    const res = await callServer('editCategory', { type: type, oldName: oldName, newName: v.newName, newMemos: v.newMemos, icon: v.icon, color: v.color });
-                    if (res.success) {
-                        categories[type][index] = { name: v.newName, memos: v.newMemos, icon: v.icon, color: v.color };
-                        saveCache(); renderCategorySettings(); updateCategoriesDropdown(); renderDashboard();
-                        Swal.fire({ title: 'อัปเดตสำเร็จ', icon: 'success', timer: 1400, showConfirmButton: false });
-                    } else throw new Error(res.message || 'อัปเดตไม่สำเร็จ');
-                } catch (e) { Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกลง Google Sheet ได้: ' + (e.message || 'ไม่ทราบสาเหตุ'), 'error'); }
+                    const { data, error } = await supabaseClient.from('finance_categories').update({
+                        name: v.newName, memos: v.newMemos, icon: v.icon, color: v.color
+                    }).eq('id', cat.id).eq('user_id', requireSignedInUser())
+                        .select('id,type,name,memos,icon,color').single();
+                    if (error) throw getSupabaseError(error, 'อัปเดตหมวดหมู่ไม่สำเร็จ');
+                    categories[type][index] = data;
+                    renderCategorySettings(); updateCategoriesDropdown(); renderDashboard();
+                    Swal.fire({ title: 'อัปเดตสำเร็จ', icon: 'success', timer: 1400, showConfirmButton: false });
+                } catch (e) { Swal.fire('ข้อผิดพลาด', e.message || 'ไม่สามารถบันทึกหมวดหมู่ได้', 'error'); }
             });
         }
 
@@ -1873,13 +1857,13 @@
                 if (!result.isConfirmed) return;
                 Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
                 try {
-                    const res = await callServer('deleteCategory', { type: type, name: name });
-                    if (res.success) {
-                        categories[type] = categories[type].filter(function (c) { return c.name !== name; });
-                        saveCache(); renderCategorySettings(); updateCategoriesDropdown();
-                        Swal.fire({ title: 'ลบสำเร็จ!', icon: 'success', timer: 1400, showConfirmButton: false });
-                    } else throw new Error(res.message || 'ลบไม่สำเร็จ');
-                } catch (e) { Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกลง Google Sheet ได้: ' + (e.message || 'ไม่ทราบสาเหตุ'), 'error'); }
+                    const { error } = await supabaseClient.from('finance_categories').delete()
+                        .eq('id', cat.id).eq('user_id', requireSignedInUser());
+                    if (error) throw getSupabaseError(error, 'ลบหมวดหมู่ไม่สำเร็จ');
+                    categories[type] = categories[type].filter(function (c) { return c.id !== cat.id; });
+                    renderCategorySettings(); updateCategoriesDropdown();
+                    Swal.fire({ title: 'ลบสำเร็จ!', icon: 'success', timer: 1400, showConfirmButton: false });
+                } catch (e) { Swal.fire('ข้อผิดพลาด', e.message || 'ไม่สามารถลบหมวดหมู่ได้', 'error'); }
             });
         }
     </script>
