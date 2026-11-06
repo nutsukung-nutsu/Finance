@@ -1,8 +1,8 @@
-const CACHE_NAME = 'finance-shell-v3';
+const CACHE_NAME = 'finance-shell-v4';
 const APP_SHELL = [
   '/',
   '/index.html',
-  '/manifest.webmanifest?v=3',
+  '/manifest.webmanifest?v=4',
   '/icons/icon-192-v3.png',
   '/icons/icon-512-v3.png',
   '/icons/icon-512-maskable-v3.png'

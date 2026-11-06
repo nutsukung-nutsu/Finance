@@ -3,7 +3,7 @@
 ## ตั้งค่าโปรเจกต์
 
 1. สร้างโปรเจกต์ Supabase แล้วเก็บรหัสผ่านฐานข้อมูลไว้ในที่ปลอดภัย
-2. ไปที่ **SQL Editor** แล้วเปิดและรัน `migrations/001_initial_schema.sql`
+2. ไปที่ **SQL Editor** แล้วรัน migration ตามลำดับ: `001_initial_schema.sql`, `002_lock_previous_month_transactions.sql` และ `003_recurring_expense_templates.sql`
 3. ไปที่ **Authentication → Users** แล้วสร้างผู้ใช้ด้วยอีเมลและรหัสผ่านของเจ้าของระบบ
 4. สำหรับระบบใช้ส่วนตัว ให้ปิดการสมัครสมาชิกสาธารณะที่ **Authentication → Providers → Email** เพื่อไม่ให้บุคคลทั่วไปสร้างบัญชีเอง
 5. ไปที่ **Project Settings → API** แล้วคัดลอก Project URL และ **Publishable key** (หรือ legacy `anon` key)

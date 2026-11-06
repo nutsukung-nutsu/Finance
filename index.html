@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#123d66">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="รายรับรายจ่าย">
-    <link rel="manifest" href="/manifest.webmanifest?v=3">
+    <link rel="manifest" href="/manifest.webmanifest?v=4">
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192-v3.png">
     <link rel="apple-touch-icon" href="/icons/icon-192-v3.png">
 
@@ -364,6 +364,7 @@
         <nav class="flex overflow-x-auto whitespace-nowrap px-4 justify-center sm:justify-start">
             <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-link active py-3 px-5 text-gray-600 hover:text-ig transition"><i class="fas fa-chart-pie mr-1 text-pink-500"></i> แดชบอร์ด</button>
             <button onclick="switchTab('add')" id="nav-add" class="nav-link py-3 px-5 text-gray-600 hover:text-ig transition"><i class="fas fa-pen-to-square mr-1 text-blue-500"></i> บันทึกรายการ</button>
+            <button onclick="switchTab('recurring')" id="nav-recurring" class="nav-link py-3 px-5 text-gray-600 hover:text-ig transition"><i class="fas fa-calendar-check mr-1 text-amber-500"></i> รายจ่ายประจำ</button>
             <button onclick="switchTab('settings')" id="nav-settings" class="nav-link py-3 px-5 text-gray-600 hover:text-ig transition"><i class="fas fa-sliders mr-1 text-purple-500"></i> ตั้งค่าหมวดหมู่</button>
         </nav>
     </header>
@@ -696,7 +697,48 @@
                 </div>
             </div>
 
-            <!-- ================= TAB 3: ตั้งค่าหมวดหมู่ (ไอคอนสี) ================= -->
+            <!-- ================= TAB 3: รายจ่ายประจำ ================= -->
+            <div id="tab-recurring" class="tab-content space-y-6">
+                <section class="bg-white/90 rounded-xl shadow-sm p-5 sm:p-6 border border-amber-100">
+                    <div class="flex items-start gap-3 mb-5">
+                        <span class="ico-badge" style="background:linear-gradient(135deg,#f5c451,#b7791f)"><i class="fas fa-calendar-check"></i></span>
+                        <div>
+                            <h2 class="text-xl font-bold text-ig">แม่แบบรายจ่ายประจำ</h2>
+                            <p class="text-sm text-gray-500 mt-1">บันทึกรายจ่ายไว้เป็นแม่แบบ แล้วเลือกเพิ่มลงรายการของเดือนนี้ด้วยตนเอง</p>
+                        </div>
+                    </div>
+                    <form id="recurringExpenseForm" onsubmit="saveRecurringExpense(event)" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 items-end bg-amber-50/60 border border-amber-100 rounded-xl p-4">
+                        <label class="text-sm font-semibold text-gray-700">ชื่อรายการ
+                            <input id="recurringName" class="inp mt-1" maxlength="100" required placeholder="เช่น ค่าอินเทอร์เน็ตบ้าน">
+                        </label>
+                        <label class="text-sm font-semibold text-gray-700">หมวดหมู่
+                            <select id="recurringCategory" class="inp mt-1" required></select>
+                        </label>
+                        <label class="text-sm font-semibold text-gray-700">จำนวนเงิน (บาท)
+                            <input id="recurringAmount" type="number" class="inp mt-1" min="0.01" step="0.01" required placeholder="0.00">
+                        </label>
+                        <label class="text-sm font-semibold text-gray-700">วันครบกำหนดของเดือน
+                            <select id="recurringDueDay" class="inp mt-1" required></select>
+                        </label>
+                        <button type="submit" class="btn-ig rounded-lg py-2.5 px-4 font-bold shadow-sm"><i class="fas fa-plus mr-1"></i> บันทึกแม่แบบ</button>
+                        <label class="text-sm font-semibold text-gray-700 md:col-span-2 xl:col-span-5">รายละเอียดเพิ่มเติม (ถ้ามี)
+                            <input id="recurringDetail" class="inp mt-1" maxlength="200" placeholder="เช่น แพ็กเกจ 500 Mbps">
+                        </label>
+                        <input id="recurringEditId" type="hidden" value="">
+                        <button id="cancelRecurringEdit" type="button" onclick="resetRecurringExpenseForm()" class="hidden rounded-lg py-2.5 px-4 font-semibold text-gray-600 bg-white border border-gray-200">ยกเลิกแก้ไข</button>
+                    </form>
+                </section>
+                <section class="bg-white/90 rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100">
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-list-check text-amber-500 mr-1"></i> เลือกบันทึกในเดือนนี้</h3>
+                        <span id="recurringCurrentMonth" class="text-sm text-gray-500"></span>
+                    </div>
+                    <div id="recurringExpenseList" class="grid grid-cols-1 lg:grid-cols-2 gap-3"></div>
+                    <p id="recurringExpenseEmpty" class="hidden text-center text-sm text-gray-400 py-8">ยังไม่มีแม่แบบรายจ่ายประจำ</p>
+                </section>
+            </div>
+
+            <!-- ================= TAB 4: ตั้งค่าหมวดหมู่ (ไอคอนสี) ================= -->
             <div id="tab-settings" class="tab-content">
                 <div class="bg-white/90 rounded-xl shadow-sm p-4 sm:p-6 mb-6 border border-gray-100">
                     <h2 class="text-xl font-bold mb-4 text-ig flex items-center gap-2">
@@ -916,6 +958,7 @@
         // ---------- State ----------
         let transactions = [];
         let categories = { income: [], expense: [] };
+        let recurringExpenses = [];
         let stagedTransactions = [];
         let charts = { income: null, expense: null };
         let picker = { income: { icon: 'fas fa-tag', color: '#168bd0' }, expense: { icon: 'fas fa-tag', color: '#d6a63b' } };
@@ -1079,6 +1122,11 @@
         }
         // ---------- Init ----------
         async function initializeApp() {
+            const dueDaySelect = document.getElementById('recurringDueDay');
+            dueDaySelect.innerHTML = Array.from({ length: 31 }, function (_, index) {
+                return '<option value="' + (index + 1) + '">' + (index + 1) + '</option>';
+            }).join('');
+            dueDaySelect.value = '1';
             if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
                 navigator.serviceWorker.register('/service-worker.js').catch(function (error) { console.warn('PWA worker registration failed', error); });
             }
@@ -1104,6 +1152,7 @@
                 if (event === 'SIGNED_OUT') {
                     transactions = [];
                     categories = { income: [], expense: [] };
+            recurringExpenses = [];
                     showLoginScreen();
                 }
             });
@@ -1168,7 +1217,8 @@
                     id: t.id, type: t.type,
                     date: d ? toYMD(d) : (t.date || ''),
                     amount: t.amount, category: t.category || '',
-                    detail: t.detail || '', note: t.note || '', timestamp: t.timestamp || ''
+                    detail: t.detail || '', note: t.note || '', timestamp: t.timestamp || '',
+                    recurringExpenseId: t.recurringExpenseId || null, recurringPeriod: t.recurringPeriod || null
                 };
             });
         }
@@ -1200,18 +1250,23 @@
             showLoader(true, 'กำลังซิงค์ข้อมูลล่าสุด...');
             try {
                 const userId = requireSignedInUser();
-                const [transactionResult, categoryResult] = await Promise.all([
-                    supabaseClient.from('finance_transactions').select('id,type,transaction_date,amount,category,detail,note,created_at')
+                const [transactionResult, categoryResult, recurringResult] = await Promise.all([
+                    supabaseClient.from('finance_transactions').select('id,type,transaction_date,amount,category,detail,note,recurring_expense_id,recurring_period,created_at')
                         .eq('user_id', userId).order('transaction_date', { ascending: false }).order('created_at', { ascending: false }),
                     supabaseClient.from('finance_categories').select('id,type,name,memos,icon,color')
-                        .eq('user_id', userId).order('name', { ascending: true })
+                        .eq('user_id', userId).order('name', { ascending: true }),
+                    supabaseClient.from('finance_recurring_expenses').select('id,name,category,amount,detail,due_day,created_at')
+                        .eq('user_id', userId).order('created_at', { ascending: false })
                 ]);
                 if (transactionResult.error) throw getSupabaseError(transactionResult.error, 'โหลดรายการไม่สำเร็จ');
                 if (categoryResult.error) throw getSupabaseError(categoryResult.error, 'โหลดหมวดหมู่ไม่สำเร็จ');
+                if (recurringResult.error) throw getSupabaseError(recurringResult.error, 'โหลดแม่แบบรายจ่ายประจำไม่สำเร็จ');
                 transactions = normalizeTransactions((transactionResult.data || []).map(function (row) {
                     return { id: row.id, type: row.type, date: row.transaction_date, amount: row.amount,
-                        category: row.category, detail: row.detail, note: row.note, timestamp: row.created_at };
+                        category: row.category, detail: row.detail, note: row.note, timestamp: row.created_at,
+                        recurringExpenseId: row.recurring_expense_id, recurringPeriod: row.recurring_period };
                 }));
+                recurringExpenses = recurringResult.data || [];
                 categories = normalizeCategories({
                     income: (categoryResult.data || []).filter(function (row) { return row.type === 'income'; }),
                     expense: (categoryResult.data || []).filter(function (row) { return row.type === 'expense'; })
@@ -1228,6 +1283,7 @@
             populateYearOptions();
             updateCategoriesDropdown();
             renderCategorySettings();
+            renderRecurringExpenses();
             renderDashboard();
         }
 
@@ -2093,6 +2149,166 @@
 
             categories.income.forEach(function (c, i) { ulIncome.innerHTML += renderLi('income', c, i); });
             categories.expense.forEach(function (c, i) { ulExpense.innerHTML += renderLi('expense', c, i); });
+            populateRecurringCategoryOptions();
+        }
+
+        function populateRecurringCategoryOptions(selected) {
+            const select = document.getElementById('recurringCategory');
+            const previous = selected || select.value;
+            select.innerHTML = '';
+            if (!categories.expense.length) {
+                select.innerHTML = '<option value="">เพิ่มหมวดหมู่รายจ่ายก่อน</option>';
+                select.disabled = true;
+                return;
+            }
+            select.disabled = false;
+            select.innerHTML = categories.expense.map(function (category) {
+                return '<option value="' + escHtml(category.name) + '">' + escHtml(category.name) + '</option>';
+            }).join('');
+            if (categories.expense.some(function (category) { return category.name === previous; })) select.value = previous;
+        }
+
+        function currentMonthPeriod() {
+            const now = new Date();
+            return { year: now.getFullYear(), month: now.getMonth() + 1, period: toYMD(new Date(now.getFullYear(), now.getMonth(), 1)) };
+        }
+
+        function getRecurringTransactionDate(dueDay, year, month) {
+            const day = Math.min(Number(dueDay) || 1, new Date(year, month, 0).getDate());
+            return toYMD(new Date(year, month - 1, day));
+        }
+
+        function renderRecurringExpenses() {
+            const list = document.getElementById('recurringExpenseList');
+            if (!list) return;
+            const period = currentMonthPeriod();
+            document.getElementById('recurringCurrentMonth').innerText = formatThaiMonthYear(period.year, period.month);
+            populateRecurringCategoryOptions();
+            list.innerHTML = '';
+            const empty = document.getElementById('recurringExpenseEmpty');
+            empty.classList.toggle('hidden', recurringExpenses.length > 0);
+
+            recurringExpenses.forEach(function (template) {
+                const applied = transactions.some(function (transaction) {
+                    return transaction.recurringExpenseId === template.id && transaction.recurringPeriod === period.period;
+                });
+                const category = categories.expense.find(function (item) { return item.name === template.category; });
+                const color = category && category.color || '#d6a63b';
+                const card = document.createElement('article');
+                card.className = 'flex items-center justify-between gap-3 bg-white border border-gray-100 rounded-xl p-4 shadow-sm';
+                card.innerHTML =
+                    '<div class="flex items-center gap-3 min-w-0">' +
+                        '<span class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-white shadow-sm" style="background:' + color + '"><i class="' + (category && category.icon || 'fas fa-receipt') + '"></i></span>' +
+                        '<div class="min-w-0"><div class="font-bold text-gray-800 truncate">' + escHtml(template.name) + '</div>' +
+                        '<div class="text-xs text-gray-500">' + escHtml(template.category) + (template.detail ? ' · ' + escHtml(template.detail) : '') + '</div>' +
+                        '<div class="text-xs text-amber-700 mt-1">ครบกำหนดวันที่ ' + Number(template.due_day) + ' · ฿' + fmt(template.amount) + '</div></div>' +
+                    '</div><div class="flex items-center gap-2 shrink-0">' +
+                        '<button type="button" onclick="editRecurringExpense(\'' + template.id + '\')" class="h-9 w-9 rounded-lg border border-blue-100 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" title="แก้ไขแม่แบบ"><i class="fas fa-pen"></i></button>' +
+                        '<button type="button" onclick="confirmDeleteRecurringExpense(\'' + template.id + '\')" class="h-9 w-9 rounded-lg border border-red-100 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white" title="ลบแม่แบบ"><i class="fas fa-trash"></i></button>' +
+                        (applied
+                            ? '<span class="text-xs font-bold text-green-700 bg-green-50 border border-green-100 px-3 py-2 rounded-lg"><i class="fas fa-check mr-1"></i>เพิ่มเดือนนี้แล้ว</span>'
+                            : '<button type="button" onclick="addRecurringExpenseToMonth(\'' + template.id + '\')" class="text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 px-3 py-2 rounded-lg shadow-sm whitespace-nowrap"><i class="fas fa-plus mr-1"></i>เพิ่มเดือนนี้</button>') +
+                    '</div>';
+                list.appendChild(card);
+            });
+        }
+
+        function resetRecurringExpenseForm() {
+            document.getElementById('recurringExpenseForm').reset();
+            document.getElementById('recurringEditId').value = '';
+            document.getElementById('recurringDueDay').value = '1';
+            document.querySelector('#recurringExpenseForm button[type="submit"]').innerHTML = '<i class="fas fa-plus mr-1"></i> บันทึกแม่แบบ';
+            document.getElementById('cancelRecurringEdit').classList.add('hidden');
+        }
+
+        function editRecurringExpense(id) {
+            const template = recurringExpenses.find(function (item) { return item.id === id; });
+            if (!template) return;
+            document.getElementById('recurringEditId').value = template.id;
+            document.getElementById('recurringName').value = template.name;
+            document.getElementById('recurringAmount').value = template.amount;
+            document.getElementById('recurringDetail').value = template.detail || '';
+            document.getElementById('recurringDueDay').value = String(template.due_day);
+            populateRecurringCategoryOptions(template.category);
+            document.querySelector('#recurringExpenseForm button[type="submit"]').innerHTML = '<i class="fas fa-save mr-1"></i> บันทึกการแก้ไข';
+            document.getElementById('cancelRecurringEdit').classList.remove('hidden');
+            document.getElementById('recurringExpenseForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        async function saveRecurringExpense(event) {
+            event.preventDefault();
+            const id = document.getElementById('recurringEditId').value;
+            const row = {
+                name: document.getElementById('recurringName').value.trim(),
+                category: document.getElementById('recurringCategory').value,
+                amount: Number(document.getElementById('recurringAmount').value),
+                detail: document.getElementById('recurringDetail').value.trim(),
+                due_day: Number(document.getElementById('recurringDueDay').value)
+            };
+            if (!row.category || !categories.expense.some(function (category) { return category.name === row.category; })) {
+                return Swal.fire('เลือกหมวดหมู่รายจ่าย', 'กรุณาเพิ่มหรือเลือกหมวดหมู่รายจ่ายก่อนบันทึกแม่แบบ', 'warning');
+            }
+            Swal.fire({ title: 'กำลังบันทึกแม่แบบ...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+            try {
+                let result;
+                if (id) {
+                    result = await supabaseClient.from('finance_recurring_expenses').update(row).eq('id', id).eq('user_id', requireSignedInUser())
+                        .select('id,name,category,amount,detail,due_day,created_at').single();
+                } else {
+                    row.user_id = requireSignedInUser();
+                    result = await supabaseClient.from('finance_recurring_expenses').insert(row)
+                        .select('id,name,category,amount,detail,due_day,created_at').single();
+                }
+                if (result.error) throw getSupabaseError(result.error, 'บันทึกแม่แบบไม่สำเร็จ');
+                const index = recurringExpenses.findIndex(function (item) { return item.id === result.data.id; });
+                if (index < 0) recurringExpenses.unshift(result.data); else recurringExpenses[index] = result.data;
+                resetRecurringExpenseForm();
+                renderRecurringExpenses();
+                Swal.fire({ title: id ? 'แก้ไขแม่แบบแล้ว' : 'บันทึกแม่แบบแล้ว', icon: 'success', timer: 1400, showConfirmButton: false });
+            } catch (error) {
+                Swal.fire('บันทึกไม่สำเร็จ', error.message || 'ไม่สามารถบันทึกแม่แบบได้', 'error');
+            }
+        }
+
+        async function confirmDeleteRecurringExpense(id) {
+            const template = recurringExpenses.find(function (item) { return item.id === id; });
+            if (!template) return;
+            const result = await Swal.fire({ title: 'ลบแม่แบบรายจ่ายประจำ?', text: 'รายการธุรกรรมที่เคยบันทึกไว้จะยังคงอยู่', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: 'ลบแม่แบบ', cancelButtonText: 'ยกเลิก' });
+            if (!result.isConfirmed) return;
+            try {
+                const { error } = await supabaseClient.from('finance_recurring_expenses').delete().eq('id', id).eq('user_id', requireSignedInUser());
+                if (error) throw getSupabaseError(error, 'ลบแม่แบบไม่สำเร็จ');
+                recurringExpenses = recurringExpenses.filter(function (item) { return item.id !== id; });
+                renderRecurringExpenses();
+                Swal.fire({ title: 'ลบแม่แบบแล้ว', icon: 'success', timer: 1200, showConfirmButton: false });
+            } catch (error) { Swal.fire('ลบไม่สำเร็จ', error.message || 'ไม่สามารถลบแม่แบบได้', 'error'); }
+        }
+
+        async function addRecurringExpenseToMonth(id) {
+            const template = recurringExpenses.find(function (item) { return item.id === id; });
+            if (!template) return;
+            if (!categories.expense.some(function (category) { return category.name === template.category; })) {
+                return Swal.fire('หมวดหมู่ไม่พร้อมใช้งาน', 'แก้ไขแม่แบบนี้แล้วเลือกหมวดหมู่รายจ่ายที่มีอยู่ก่อน', 'warning');
+            }
+            const period = currentMonthPeriod();
+            if (transactions.some(function (transaction) { return transaction.recurringExpenseId === id && transaction.recurringPeriod === period.period; })) {
+                renderRecurringExpenses();
+                return Swal.fire('เพิ่มรายการนี้แล้ว', 'แม่แบบนี้ถูกบันทึกในเดือนนี้แล้ว', 'info');
+            }
+            const dueDate = getRecurringTransactionDate(template.due_day, period.year, period.month);
+            try {
+                const { error } = await supabaseClient.from('finance_transactions').insert({
+                    user_id: requireSignedInUser(), type: 'expense', transaction_date: dueDate,
+                    amount: Number(template.amount), category: template.category, detail: template.detail || '',
+                    note: 'รายจ่ายประจำ: ' + template.name, recurring_expense_id: template.id, recurring_period: period.period
+                });
+                if (error) {
+                    if (error.code === '23505') return Swal.fire('เพิ่มรายการนี้แล้ว', 'แม่แบบนี้ถูกบันทึกในเดือนนี้แล้ว', 'info');
+                    throw getSupabaseError(error, 'เพิ่มรายจ่ายประจำไม่สำเร็จ');
+                }
+                await loadServerData();
+                Swal.fire({ title: 'เพิ่มรายจ่ายประจำแล้ว', text: 'บันทึกวันที่ ' + formatThaiDate(dueDate) + ' เรียบร้อย', icon: 'success', timer: 1800, showConfirmButton: false });
+            } catch (error) { Swal.fire('เพิ่มรายการไม่สำเร็จ', error.message || 'กรุณาลองใหม่อีกครั้ง', 'error'); }
         }
 
         async function addCategory(type) {
