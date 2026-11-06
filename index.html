@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบรายรับ-รายจ่าย ของนัสซึคุง คุณชายสายเสมอ</title>
+
+    <!-- เชื่อมต่อล่วงหน้ากับเซิร์ฟเวอร์ Apps Script เพื่อดึงข้อมูลจาก Google Sheet ได้เร็วขึ้นตั้งแต่โหลดหน้าแรก -->
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="dns-prefetch" href="https://script.google.com">
+    <link rel="preconnect" href="https://script.googleusercontent.com">
+
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            font-size: 16px;
+            color: #262626;
+            background-image: url('https://i.pinimg.com/1200x/8e/b2/27/8eb22742acb5e8f41f9499f2745a9c21.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+        .content-wrapper {
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
+        }
+        .bg-ig-gradient { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+        .text-ig {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-ig {
+            background: linear-gradient(45deg, #f09433 0%, #dc2743 50%, #bc1888 100%);
+            color: white;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .btn-ig:hover { opacity: 0.9; }
+        .btn-ig:active { transform: scale(0.98); }
+        .card-stat {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            color: #000;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid #efefef;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cc2366; border-radius: 3px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        .nav-link.active { border-bottom: 3px solid #dc2743; color: #dc2743; font-weight: bold; }
+        .modal-backdrop { background-color: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
+        .inp {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: #fff;
+            transition: .15s;
+            font-size: 0.875rem;
+        }
+        .inp:focus { outline: none; border-color: #ec4899; box-shadow: 0 0 0 1px #ec4899; }
+        .memo-chip {
+            display: inline-flex; align-items: center; gap: .25rem;
+            background: #f3f4f6; color: #4b5563;
+            font-size: 11px; padding: 2px 8px; border-radius: 9999px;
+            margin: 2px 2px 0 0; border: 1px solid #e5e7eb;
+        }
+        /* ---------- ไอคอนสีประจำช่องฟอร์ม ---------- */
+        .ico-badge {
+            width: 26px; height: 26px; border-radius: 9999px;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 11px; box-shadow: 0 2px 4px rgba(0,0,0,.15);
+            flex-shrink: 0;
+        }
+        .field-label { display: flex; align-items: center; gap: .5rem; font-weight: 600; font-size: .875rem; color: #374151; margin-bottom: .4rem; }
+        .field-wrap { position: relative; }
+        .field-wrap .field-ico {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            font-size: 14px; pointer-events: none;
+        }
+        .field-wrap input, .field-wrap select { padding-left: 38px !important; }
+        .icon-pick {
+            width: 40px; height: 40px; border-radius: .6rem; border: 2px solid transparent;
+            display: flex; align-items: center; justify-content: center; color: #fff;
+            cursor: pointer; transition: .15s; font-size: 15px;
+        }
+        .icon-pick:hover { transform: translateY(-2px); }
+        .icon-pick.sel { border-color: #111827; box-shadow: 0 0 0 2px #fff inset; }
+        .color-pick { width: 28px; height: 28px; border-radius: 9999px; cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1px #d1d5db; transition: .15s; }
+        .color-pick.sel { box-shadow: 0 0 0 2px #111827; transform: scale(1.12); }
+        .swal2-html-container { overflow: visible !important; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- ================= หน้าจอลงชื่อเข้าใช้งาน ================= -->
+    <div id="loginScreen" class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+         style="background-image:url('https://i.pinimg.com/1200x/8e/b2/27/8eb22742acb5e8f41f9499f2745a9c21.jpg'); background-size:cover; background-position:center;">
+        <div class="content-wrapper w-full max-w-sm p-6 sm:p-8">
+            <div class="text-center mb-6">
+                <img src="https://i.pinimg.com/1200x/11/e5/a8/11e5a8444570658f24d1e9349f5b501d.jpg" class="h-16 w-16 mx-auto rounded-2xl shadow-md border border-gray-100 bg-white object-contain mb-3" alt="Logo">
+                <h1 class="text-lg font-bold text-ig">ระบบรายรับ-รายจ่าย</h1>
+                <p class="text-sm text-gray-500">ของนัสซึคุง คุณชายสายเสมอ</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="field-label"><i class="fas fa-user" style="color:#ec4899"></i> ชื่อผู้ใช้</label>
+                    <div class="field-wrap">
+                        <i class="fas fa-user field-ico text-gray-400"></i>
+                        <input id="loginUsername" type="text" class="inp" placeholder="ชื่อผู้ใช้" autocomplete="username" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="field-label"><i class="fas fa-lock" style="color:#8b5cf6"></i> รหัสผ่าน</label>
+                    <div class="field-wrap">
+                        <i class="fas fa-lock field-ico text-gray-400"></i>
+                        <input id="loginPassword" type="password" class="inp" placeholder="รหัสผ่าน" autocomplete="current-password" required>
+                    </div>
+                </div>
+                <p id="loginErrorMsg" class="text-sm text-red-500 hidden"></p>
+                <button type="submit" class="w-full btn-ig py-3 rounded-xl font-bold shadow-md">
+                    <i class="fas fa-right-to-bracket mr-1"></i> เข้าสู่ระบบ
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= Pop Up ดาวน์โหลด .apk ================= -->
+    <div id="appDownloadModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop transition-opacity p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden max-h-[92vh] overflow-y-auto">
+            <div class="bg-ig-gradient p-4 text-center text-white relative">
+                <h3 class="text-xl font-bold"><i class="fab fa-android mr-1"></i> ดาวน์โหลดแอปพลิเคชัน</h3>
+                <p class="text-xs opacity-90 mt-1">ไฟล์ติดตั้ง Android (.apk)</p>
+                <button onclick="closeAppModal()" class="absolute top-4 right-4 text-white hover:text-gray-200"><i class="fas fa-times text-xl"></i></button>
+            </div>
+
+            <div class="p-6 text-center space-y-4">
+                <img src="https://i.pinimg.com/1200x/11/e5/a8/11e5a8444570658f24d1e9349f5b501d.jpg" class="h-20 w-20 mx-auto rounded-2xl shadow-lg border border-gray-100 bg-white object-contain" alt="App Icon">
+                <div>
+                    <p class="font-bold text-gray-800">นัสซึคุง คุณชายสายเสมอ</p>
+                    <p class="text-xs text-gray-500" id="apkMeta">เวอร์ชัน 1.0.0 · ขนาดประมาณ 12 MB · Android 7.0 ขึ้นไป</p>
+                </div>
+
+                <!-- QR Code -->
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3">
+                    <img id="apkQr" src="" alt="QR" class="w-24 h-24 rounded-lg bg-white border border-gray-200 shrink-0">
+                    <div class="text-left text-xs text-gray-600">
+                        <p class="font-bold text-gray-700 mb-1"><i class="fas fa-qrcode text-pink-500"></i> สแกนโหลดจากมือถือ</p>
+                        <p>เปิดกล้องมือถือสแกน QR นี้ เพื่อดาวน์โหลดไฟล์ .apk ได้ทันที</p>
+                        <button onclick="copyApkLink()" class="mt-2 text-[11px] bg-white border border-gray-300 px-2 py-1 rounded-md hover:bg-gray-100"><i class="fas fa-copy text-blue-500"></i> คัดลอกลิงก์</button>
+                    </div>
+                </div>
+
+                <!-- ปุ่มดาวน์โหลด -->
+                <a id="apkLink" href="#" download="NatsuKung-Finance.apk"
+                   class="w-full bg-[#3DDC84] text-white py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#32b86e] transition font-bold shadow-md text-lg">
+                    <i class="fas fa-download text-xl"></i> ดาวน์โหลด .apk
+                </a>
+
+                <!-- วิธีติดตั้ง -->
+                <div class="text-left bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1">
+                    <p class="font-bold"><i class="fas fa-circle-info"></i> วิธีติดตั้งไฟล์ .apk</p>
+                    <p>1. กดดาวน์โหลดแล้วเปิดไฟล์จากแถบแจ้งเตือน หรือโฟลเดอร์ Download</p>
+                    <p>2. หากขึ้นเตือน ให้เปิดสิทธิ์ <b>"ติดตั้งแอปที่ไม่รู้จัก"</b> ให้กับเบราว์เซอร์ที่ใช้</p>
+                    <p>3. กด <b>ติดตั้ง</b> แล้วรอจนเสร็จ เปิดใช้งานได้เลย</p>
+                    <p class="text-[11px] text-amber-600">* รองรับเฉพาะ Android — ผู้ใช้ iOS กรุณาใช้งานผ่านเว็บเบราว์เซอร์</p>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="dontShowAgain()" class="flex-1 text-xs text-gray-500 hover:text-gray-800 py-2">ไม่ต้องแสดงอีก</button>
+                    <button onclick="closeAppModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 text-sm font-medium">ใช้งานผ่านเว็บต่อ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header id="appHeader" class="hidden bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-40 border-b border-gray-200">
+        <div class="bg-ig-gradient text-white py-3 px-4 shadow-md flex items-center justify-center gap-3 relative">
+            <div class="absolute left-4 top-1/2 -translate-y-1/2">
+                <button onclick="toggleUserMenu()" id="userMenuBtn" class="bg-white/20 hover:bg-white/35 border border-white/40 rounded-full pl-2 pr-3 h-10 flex items-center gap-2 text-sm transition">
+                    <i class="fas fa-user-circle"></i> <span id="currentUserLabel">ผู้ใช้</span> <i class="fas fa-caret-down text-xs opacity-80"></i>
+                </button>
+                <div id="userMenuDropdown" class="hidden absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 text-gray-700 text-sm overflow-hidden z-50">
+                    <button onclick="openChangePasswordModal()" class="w-full text-left px-4 py-2.5 hover:bg-gray-100 transition"><i class="fas fa-key mr-2 text-amber-500"></i> เปลี่ยนรหัสผ่าน</button>
+                    <button onclick="handleLogout()" class="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-600 transition border-t border-gray-100"><i class="fas fa-right-from-bracket mr-2"></i> ออกจากระบบ</button>
+                </div>
+            </div>
+            <img src="https://i.pinimg.com/1200x/11/e5/a8/11e5a8444570658f24d1e9349f5b501d.jpg" alt="Logo" class="h-12 w-12 rounded-full object-cover bg-white shadow-sm border-2 border-white">
+            <h1 class="font-bold m-0 text-lg">ระบบรายรับ-รายจ่าย ของนัสซึคุง คุณชายสายเสมอ</h1>
+            <button onclick="openAppModal()" title="ดาวน์โหลดแอป (.apk)" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/35 border border-white/40 rounded-full w-10 h-10 flex items-center justify-center transition">
+                <i class="fas fa-mobile-screen-button"></i>
+            </button>
+        </div>
+        <nav class="flex overflow-x-auto whitespace-nowrap px-4 justify-center sm:justify-start">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-link active py-3 px-5 text-gray-600 hover:text-ig transition"><i class="fas fa-chart-pie mr-1 text-pink-500"></i> แดชบอร์ด</button>
+            <button onclick="switchTab('add')" id="nav-add" class="nav-link py-3 px-5 text-gray-600 hover:text-ig transition"><i class="fas fa-pen-to-square mr-1 text-blue-500"></i> บันทึกรายการ</button>
+            <button onclick="switchTab('settings')" id="nav-settings" class="nav-link py-3 px-5 text-gray-600 hover:text-ig transition"><i class="fas fa-sliders mr-1 text-purple-500"></i> ตั้งค่าหมวดหมู่</button>
+        </nav>
+    </header>
+
+    <main id="appMain" class="hidden flex-grow p-4 md:p-6 w-full max-w-7xl mx-auto">
+        <div class="content-wrapper p-4 md:p-6 min-h-[80vh]">
+
+            <div id="globalLoader" class="flex-col items-center justify-center py-20 hidden">
+                <i class="fas fa-spinner fa-spin text-4xl text-ig mb-4"></i>
+                <p class="text-gray-500 font-medium" id="loaderText">กำลังโหลดข้อมูล...</p>
+            </div>
+
+            <!-- ================= TAB 1: แดชบอร์ด ================= -->
+            <div id="tab-dashboard" class="tab-content active space-y-6">
+
+                <div class="bg-white/80 p-4 rounded-xl shadow-sm border border-gray-100">
+                    <div class="flex flex-wrap gap-3 items-center justify-between">
+                        <h2 class="text-lg font-bold text-ig"><i class="fas fa-chart-line mr-1"></i> สรุปผล : <span id="periodLabel" class="text-gray-700" style="-webkit-text-fill-color:#374151">-</span></h2>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <button onclick="stepMonth(-1)" title="เดือนก่อนหน้า" class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 shadow-sm"><i class="fas fa-chevron-left text-gray-600"></i></button>
+                            <select id="filterYear" class="inp w-auto" onchange="onPeriodChange()"></select>
+                            <select id="filterMonthNum" class="inp w-auto" onchange="onPeriodChange()">
+                                <option value="all">ทั้งปี (ทุกเดือน)</option>
+                                <option value="1">มกราคม</option><option value="2">กุมภาพันธ์</option>
+                                <option value="3">มีนาคม</option><option value="4">เมษายน</option>
+                                <option value="5">พฤษภาคม</option><option value="6">มิถุนายน</option>
+                                <option value="7">กรกฎาคม</option><option value="8">สิงหาคม</option>
+                                <option value="9">กันยายน</option><option value="10">ตุลาคม</option>
+                                <option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+                            </select>
+                            <button onclick="stepMonth(1)" title="เดือนถัดไป" class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 shadow-sm"><i class="fas fa-chevron-right text-gray-600"></i></button>
+                            <button onclick="goCurrentMonth()" class="px-3 py-2 btn-ig rounded-lg text-sm font-bold shadow-sm"><i class="fas fa-calendar-day mr-1"></i> เดือนนี้</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="card-stat border-t-4 border-green-500 relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 opacity-5"><i class="fas fa-arrow-down text-8xl"></i></div>
+                        <p class="text-sm font-semibold mb-1 text-gray-700"><i class="fas fa-arrow-down text-green-500"></i> รายรับ (บาท)</p>
+                        <h3 class="text-3xl font-bold text-green-600" id="stat-income">0.00</h3>
+                    </div>
+                    <div class="card-stat border-t-4 border-red-500 relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 opacity-5"><i class="fas fa-arrow-up text-8xl"></i></div>
+                        <p class="text-sm font-semibold mb-1 text-gray-700"><i class="fas fa-arrow-up text-red-500"></i> รายจ่าย (บาท)</p>
+                        <h3 class="text-3xl font-bold text-red-600" id="stat-expense">0.00</h3>
+                    </div>
+                    <div class="card-stat border-t-4 border-blue-500 relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 opacity-5"><i class="fas fa-wallet text-8xl"></i></div>
+                        <p class="text-sm font-semibold mb-1 text-gray-700">
+                            <i class="fas fa-wallet text-blue-500"></i> คงเหลือ (บาท)
+                            <i class="fas fa-info-circle text-xs text-gray-400 cursor-help" title="รวมยอดยกมาจากช่วงเวลาก่อนหน้าทั้งหมด"></i>
+                        </p>
+                        <h3 class="text-3xl font-bold text-blue-600" id="stat-balance">0.00</h3>
+                        <p class="text-xs mt-2 p-1.5 bg-gray-50 rounded-md border border-gray-100 inline-block text-gray-600" id="stat-carryover">ยอดยกมาสะสม: 0.00</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white/80 p-5 rounded-xl shadow-sm border border-gray-100">
+                        <h4 class="text-center font-bold mb-4 text-gray-700"><i class="fas fa-circle-dot text-green-500 mr-1"></i> สัดส่วนรายรับ</h4>
+                        <div class="relative h-64 w-full flex justify-center"><canvas id="incomeChart"></canvas></div>
+                    </div>
+                    <div class="bg-white/80 p-5 rounded-xl shadow-sm border border-gray-100">
+                        <h4 class="text-center font-bold mb-4 text-gray-700"><i class="fas fa-circle-dot text-red-500 mr-1"></i> สัดส่วนรายจ่าย</h4>
+                        <div class="relative h-64 w-full flex justify-center"><canvas id="expenseChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="bg-white/90 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-lg font-bold text-ig"><i class="fas fa-history mr-1"></i> ภาพรวมย้อนหลังรายเดือน</h2>
+                        <span class="text-xs text-gray-500">คลิกที่แถวเพื่อดูรายละเอียดของเดือนนั้น</span>
+                    </div>
+                    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white max-h-80 overflow-y-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px] text-sm">
+                            <thead class="sticky top-0">
+                                <tr class="bg-gray-50 text-gray-700 border-b border-gray-200">
+                                    <th class="p-3 font-semibold">เดือน</th>
+                                    <th class="p-3 font-semibold text-center">จำนวนรายการ</th>
+                                    <th class="p-3 font-semibold text-right">รายรับ</th>
+                                    <th class="p-3 font-semibold text-right">รายจ่าย</th>
+                                    <th class="p-3 font-semibold text-right">สุทธิเดือนนี้</th>
+                                    <th class="p-3 font-semibold text-right">ยอดสะสม</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthlyOverviewBody" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                        <div id="overviewEmpty" class="text-center py-8 text-gray-400 hidden bg-gray-50">ยังไม่มีข้อมูลย้อนหลัง</div>
+                    </div>
+                </div>
+
+                <div class="bg-white/90 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-3">
+                        <h2 class="text-lg font-bold text-ig"><i class="fas fa-list-alt mr-1"></i> ประวัติรายการ <span id="historyPeriodLabel" class="text-sm text-gray-500 font-normal" style="-webkit-text-fill-color:#6b7280"></span></h2>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <div class="relative flex-grow sm:w-72">
+                                <input type="text" id="fltKeyword" oninput="applyFilters()" class="w-full border border-gray-300 rounded-full px-4 py-2 pl-10 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition" placeholder="ค้นหารายการ (พิมพ์ได้เลย)...">
+                                <i class="fas fa-search absolute left-3.5 top-3 text-pink-400"></i>
+                            </div>
+                            <button onclick="toggleAdvancedFilter()" id="btnToggleFilter" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 shadow-sm text-sm whitespace-nowrap"><i class="fas fa-filter text-purple-500"></i> ตัวกรอง</button>
+                        </div>
+                    </div>
+
+                    <div id="advancedFilterBox" class="hidden bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-right-left text-indigo-500"></i> ประเภท</label>
+                                <select id="fltType" class="inp" onchange="applyFilters()">
+                                    <option value="all">ทั้งหมด</option>
+                                    <option value="income">รายรับ</option>
+                                    <option value="expense">รายจ่าย</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-tags text-amber-500"></i> หมวดหมู่</label>
+                                <select id="fltCategory" class="inp" onchange="applyFilters()"><option value="all">ทั้งหมด</option></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-calendar-plus text-green-500"></i> วันที่เริ่ม</label>
+                                <input type="date" id="fltDateFrom" class="inp" onchange="applyFilters()">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-calendar-check text-red-500"></i> วันที่สิ้นสุด</label>
+                                <input type="date" id="fltDateTo" class="inp" onchange="applyFilters()">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-arrow-down-short-wide text-teal-500"></i> จำนวนเงินต่ำสุด</label>
+                                <input type="number" id="fltMin" class="inp" placeholder="0.00" oninput="applyFilters()">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-arrow-up-wide-short text-orange-500"></i> จำนวนเงินสูงสุด</label>
+                                <input type="number" id="fltMax" class="inp" placeholder="ไม่จำกัด" oninput="applyFilters()">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-sort text-blue-500"></i> เรียงลำดับ</label>
+                                <select id="fltSort" class="inp" onchange="applyFilters()">
+                                    <option value="date_desc">วันที่ล่าสุด → เก่าสุด</option>
+                                    <option value="date_asc">วันที่เก่าสุด → ล่าสุด</option>
+                                    <option value="amount_desc">จำนวนเงินมาก → น้อย</option>
+                                    <option value="amount_asc">จำนวนเงินน้อย → มาก</option>
+                                    <option value="cat_asc">หมวดหมู่ (ก-ฮ)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-table-list text-gray-500"></i> แสดงต่อหน้า</label>
+                                <select id="fltPerPage" class="inp" onchange="changePerPage()">
+                                    <option value="10">10 รายการ</option>
+                                    <option value="25">25 รายการ</option>
+                                    <option value="50">50 รายการ</option>
+                                    <option value="100">100 รายการ</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-3">
+                            <button onclick="resetFilters()" class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-black text-sm shadow-sm"><i class="fas fa-rotate-left mr-1"></i> ล้างตัวกรองทั้งหมด</button>
+                        </div>
+                    </div>
+
+                    <div id="filterSummary" class="flex flex-wrap gap-2 mb-3 text-xs"></div>
+
+                    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+                        <table class="w-full text-left border-collapse min-w-[820px]">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-700 text-sm border-b border-gray-200">
+                                    <th class="p-3 font-semibold">รหัส</th>
+                                    <th class="p-3 font-semibold">วันที่</th>
+                                    <th class="p-3 font-semibold">ประเภท</th>
+                                    <th class="p-3 font-semibold">หมวดหมู่ &amp; รายละเอียด</th>
+                                    <th class="p-3 text-right font-semibold">จำนวนเงิน</th>
+                                    <th class="p-3 text-center font-semibold">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody" class="divide-y divide-gray-100 text-sm"></tbody>
+                        </table>
+                        <div id="historyEmpty" class="text-center py-12 text-gray-400 hidden bg-gray-50">
+                            <i class="fas fa-folder-open text-4xl mb-3 opacity-50"></i>
+                            <p class="font-medium">ไม่พบข้อมูลรายการตามเงื่อนไขที่กรอง</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center mt-4 text-sm text-gray-600">
+                        <div id="pageInfo" class="font-medium bg-white px-3 py-1 rounded-md shadow-sm border border-gray-100">แสดงรายการ 0 - 0 จาก 0</div>
+                        <div class="flex gap-1">
+                            <button onclick="prevPage()" class="px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-100 transition shadow-sm"><i class="fas fa-chevron-left"></i></button>
+                            <span id="pageNumberDisplay" class="px-4 py-1.5 bg-pink-50 text-pink-700 border border-pink-200 rounded-md font-bold shadow-sm">1</span>
+                            <button onclick="nextPage()" class="px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-100 transition shadow-sm"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB 2: บันทึกรายการ (ไอคอนสี) ================= -->
+            <div id="tab-add" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white/90 rounded-xl shadow-sm p-6 border border-gray-100 h-fit relative">
+                        <h2 class="text-xl font-bold mb-5 text-ig flex items-center gap-2">
+                            <span class="ico-badge" style="background:linear-gradient(135deg,#ec4899,#8b5cf6)"><i class="fas fa-pen-to-square"></i></span>
+                            ฟอร์มบันทึกรายการ
+                        </h2>
+
+                        <form id="addForm" onsubmit="stageTransaction(event)" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="type" value="income" class="peer hidden" checked onchange="updateCategoriesDropdown()">
+                                    <div class="text-center py-3 bg-white border-2 border-gray-200 rounded-xl peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 transition font-bold shadow-sm flex items-center justify-center gap-2">
+                                        <span class="ico-badge" style="background:#10b981"><i class="fas fa-arrow-down"></i></span> รายรับ
+                                    </div>
+                                    <div class="absolute top-2 right-2 hidden peer-checked:block text-green-500"><i class="fas fa-check-circle"></i></div>
+                                </label>
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="type" value="expense" class="peer hidden" onchange="updateCategoriesDropdown()">
+                                    <div class="text-center py-3 bg-white border-2 border-gray-200 rounded-xl peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 transition font-bold shadow-sm flex items-center justify-center gap-2">
+                                        <span class="ico-badge" style="background:#ef4444"><i class="fas fa-arrow-up"></i></span> รายจ่าย
+                                    </div>
+                                    <div class="absolute top-2 right-2 hidden peer-checked:block text-red-500"><i class="fas fa-check-circle"></i></div>
+                                </label>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="field-label"><span class="ico-badge" style="background:#3b82f6"><i class="fas fa-calendar-days"></i></span> วันที่</label>
+                                    <div class="field-wrap">
+                                        <i class="fas fa-calendar-day field-ico text-blue-500"></i>
+                                        <input type="date" id="inputDate" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition bg-white" onchange="checkSpecialDetailsLimit()">
+                                    </div>
+                                    <p id="inputDateThai" class="text-xs text-gray-500 mt-1"></p>
+                                </div>
+                                <div>
+                                    <label class="field-label"><span class="ico-badge" style="background:#f59e0b"><i class="fas fa-coins"></i></span> จำนวนเงิน (บาท)</label>
+                                    <div class="field-wrap">
+                                        <i class="fas fa-baht-sign field-ico text-amber-500"></i>
+                                        <input type="number" id="inputAmount" step="0.01" min="0" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition bg-white" placeholder="0.00">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="field-label"><span class="ico-badge" style="background:#8b5cf6"><i class="fas fa-tags"></i></span> หมวดหมู่</label>
+                                <div class="field-wrap">
+                                    <i class="fas fa-tag field-ico text-purple-500"></i>
+                                    <select id="inputCategory" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition bg-white" onchange="handleCategoryChange()"></select>
+                                </div>
+                                <div id="catPreview" class="mt-2"></div>
+                            </div>
+
+                            <div id="specialDetailGroup" class="hidden p-4 bg-red-50/80 rounded-xl border border-red-100">
+                                <label class="field-label text-red-700"><span class="ico-badge" style="background:#ef4444"><i class="fas fa-file-invoice-dollar"></i></span> รายละเอียด (เลือกได้ 1 ครั้ง/เดือน)</label>
+                                <div class="field-wrap">
+                                    <i class="fas fa-receipt field-ico text-red-500"></i>
+                                    <select id="inputSpecialDetail" class="w-full border border-red-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition bg-white shadow-sm" onchange="handleSpecialDetailChange()">
+                                        <option value="">-- เลือกรายละเอียด --</option>
+                                        <option value="กยศ.">กยศ.</option>
+                                        <option value="LineBK">LineBK</option>
+                                        <option value="กรุงไทยใจปั้ม">กรุงไทยใจปั้ม</option>
+                                        <option value="SCB Eazy Cash">SCB Eazy Cash</option>
+                                        <option value="พรอมิส">พรอมิส</option>
+                                        <option value="เงินธันเดอร์">เงินธันเดอร์</option>
+                                        <option value="Samsung Galaxy S24 Ultra">Samsung Galaxy S24 Ultra</option>
+                                        <option value="AIS รายเดือน">AIS รายเดือน</option>
+                                        <option value="Shopee SPayLatter">Shopee SPayLatter</option>
+                                        <option value="Shopee SEasyCash">Shopee SEasyCash</option>
+                                        <option value="ค่าไฟหอพัก">ค่าไฟหอพัก</option>
+                                        <option value="ประกันสังคม(ม.40)">ประกันสังคม(ม.40)</option>
+                                        <option value="หอพัก">หอพัก</option>
+                                        <option value="เติมน้ำมัน">เติมน้ำมัน</option>
+                                        <option value="การลงทุน">การลงทุน</option>
+                                        <option value="อื่นๆ">อื่นๆ...โปรดระบุ</option>
+                                    </select>
+                                </div>
+                                <div class="field-wrap mt-3 hidden" id="otherDetailWrap">
+                                    <i class="fas fa-pen field-ico text-red-400"></i>
+                                    <input type="text" id="inputOtherDetail" placeholder="ระบุรายละเอียดอื่นๆ..." class="w-full border border-red-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 shadow-sm transition">
+                                </div>
+                                <p id="specialDetailWarning" class="text-sm font-medium text-red-600 mt-3 hidden bg-white p-2.5 rounded-lg border border-red-200 shadow-sm flex items-center gap-2">
+                                    <i class="fas fa-times-circle text-lg"></i> รายการนี้ถูกบันทึกไปแล้วในเดือนนี้
+                                </p>
+                            </div>
+
+                            <div id="memoSuggestWrap" class="hidden p-3 bg-blue-50/70 border border-blue-100 rounded-xl">
+                                <label class="field-label text-blue-700"><span class="ico-badge" style="background:#0ea5e9"><i class="fas fa-lightbulb"></i></span> บันทึกช่วยจำที่ตั้งไว้ของหมวดหมู่นี้</label>
+                                <div class="field-wrap">
+                                    <i class="fas fa-bookmark field-ico text-sky-500"></i>
+                                    <select id="inputMemoSelect" class="w-full border border-blue-200 rounded-lg px-4 py-2.5 bg-white text-sm focus:outline-none focus:border-blue-500" onchange="applyMemoSuggest()"></select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="field-label"><span class="ico-badge" style="background:#14b8a6"><i class="fas fa-note-sticky"></i></span> บันทึกช่วยจำ (ถ้ามี)</label>
+                                <div class="field-wrap">
+                                    <i class="fas fa-comment-dots field-ico text-teal-500"></i>
+                                    <input type="text" id="inputNote" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition bg-white" placeholder="คำอธิบายเพิ่มเติม...">
+                                </div>
+                            </div>
+
+                            <button type="submit" id="btnStageForm" class="w-full bg-gray-800 text-white hover:bg-black py-3 rounded-xl font-bold shadow-md transition flex items-center justify-center gap-2">
+                                <span class="ico-badge" style="background:#22c55e"><i class="fas fa-plus"></i></span> เพิ่มลงรายการเตรียมบันทึก
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white/90 rounded-xl shadow-sm p-6 border border-gray-100 flex flex-col h-full">
+                        <h2 class="text-xl font-bold mb-4 text-ig flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span class="ico-badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444)"><i class="fas fa-layer-group"></i></span> เตรียมบันทึก</span>
+                            <span id="stagedCount" class="bg-pink-100 text-pink-700 text-sm px-3 py-1 rounded-full font-bold">0 รายการ</span>
+                        </h2>
+                        <div class="flex-grow overflow-y-auto max-h-[350px] border border-gray-200 rounded-xl bg-gray-50/50 mb-4 shadow-inner" id="stagedListContainer">
+                            <ul id="stagedList" class="divide-y divide-gray-100 p-2"></ul>
+                            <div id="stagedEmpty" class="text-center py-12 text-gray-400">
+                                <i class="fas fa-inbox text-5xl mb-3 opacity-40"></i>
+                                <p class="text-sm font-medium">ยังไม่มีรายการในตระกร้าชั่วคราว</p>
+                            </div>
+                        </div>
+                        <button onclick="submitBatchToServer()" id="btnSubmitBatch" disabled class="w-full btn-ig py-3.5 rounded-xl font-bold shadow-lg opacity-50 cursor-not-allowed flex items-center justify-center gap-2 text-lg">
+                            <i class="fas fa-cloud-arrow-up text-xl"></i> ยืนยันบันทึกข้อมูลทั้งหมดลงระบบ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB 3: ตั้งค่าหมวดหมู่ (ไอคอนสี) ================= -->
+            <div id="tab-settings" class="tab-content">
+                <div class="bg-white/90 rounded-xl shadow-sm p-4 sm:p-6 mb-6 border border-gray-100">
+                    <h2 class="text-xl font-bold mb-4 text-ig flex items-center gap-2">
+                        <span class="ico-badge" style="background:linear-gradient(135deg,#8b5cf6,#ec4899)"><i class="fas fa-sliders"></i></span>
+                        จัดการหมวดหมู่ (เลือกไอคอน สี และบันทึกช่วยจำหลายรายการ)
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- รายรับ -->
+                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200">
+                            <h3 class="font-bold text-green-700 mb-4 border-b border-green-200 pb-2 flex items-center gap-2">
+                                <span class="ico-badge" style="background:#10b981"><i class="fas fa-arrow-down"></i></span> หมวดหมู่รายรับ
+                            </h3>
+                            <div class="flex flex-col gap-2 mb-4 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+                                <div class="field-wrap">
+                                    <i class="fas fa-tag field-ico text-green-500"></i>
+                                    <input type="text" id="newCatIncome" class="inp focus:border-green-500" placeholder="ชื่อหมวดหมู่ใหม่...">
+                                </div>
+
+                                <div class="mt-1">
+                                    <span class="text-xs font-semibold text-gray-600"><i class="fas fa-icons text-green-500"></i> เลือกไอคอน</span>
+                                    <div id="iconPickerIncome" class="flex flex-wrap gap-2 mt-2"></div>
+                                </div>
+                                <div class="mt-1">
+                                    <span class="text-xs font-semibold text-gray-600"><i class="fas fa-palette text-green-500"></i> เลือกสี</span>
+                                    <div id="colorPickerIncome" class="flex flex-wrap gap-2 mt-2"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between mt-2">
+                                    <span class="text-xs font-semibold text-gray-600"><i class="fas fa-note-sticky text-teal-500"></i> บันทึกช่วยจำ (เพิ่มได้หลายรายการ)</span>
+                                    <button type="button" onclick="addMemoField('income')" class="text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-1 rounded-lg hover:bg-green-100"><i class="fas fa-plus"></i> เพิ่มช่อง</button>
+                                </div>
+                                <div id="memoFieldsIncome" class="space-y-2"></div>
+
+                                <button onclick="addCategory('income')" class="w-full bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600 shadow-sm transition font-bold mt-1"><i class="fas fa-circle-plus"></i> เพิ่มหมวดหมู่รายรับ</button>
+                            </div>
+                            <ul id="listCatIncome" class="space-y-2.5 max-h-[400px] overflow-y-auto pr-2"></ul>
+                        </div>
+
+                        <!-- รายจ่าย -->
+                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200">
+                            <h3 class="font-bold text-red-700 mb-4 border-b border-red-200 pb-2 flex items-center gap-2">
+                                <span class="ico-badge" style="background:#ef4444"><i class="fas fa-arrow-up"></i></span> หมวดหมู่รายจ่าย
+                            </h3>
+                            <div class="flex flex-col gap-2 mb-4 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+                                <div class="field-wrap">
+                                    <i class="fas fa-tag field-ico text-red-500"></i>
+                                    <input type="text" id="newCatExpense" class="inp focus:border-red-500" placeholder="ชื่อหมวดหมู่ใหม่...">
+                                </div>
+
+                                <div class="mt-1">
+                                    <span class="text-xs font-semibold text-gray-600"><i class="fas fa-icons text-red-500"></i> เลือกไอคอน</span>
+                                    <div id="iconPickerExpense" class="flex flex-wrap gap-2 mt-2"></div>
+                                </div>
+                                <div class="mt-1">
+                                    <span class="text-xs font-semibold text-gray-600"><i class="fas fa-palette text-red-500"></i> เลือกสี</span>
+                                    <div id="colorPickerExpense" class="flex flex-wrap gap-2 mt-2"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between mt-2">
+                                    <span class="text-xs font-semibold text-gray-600"><i class="fas fa-note-sticky text-teal-500"></i> บันทึกช่วยจำ (เพิ่มได้หลายรายการ)</span>
+                                    <button type="button" onclick="addMemoField('expense')" class="text-xs bg-red-50 text-red-700 border border-red-200 px-2 py-1 rounded-lg hover:bg-red-100"><i class="fas fa-plus"></i> เพิ่มช่อง</button>
+                                </div>
+                                <div id="memoFieldsExpense" class="space-y-2"></div>
+
+                                <button onclick="addCategory('expense')" class="w-full bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 shadow-sm transition font-bold mt-1"><i class="fas fa-circle-plus"></i> เพิ่มหมวดหมู่รายจ่าย</button>
+                            </div>
+                            <ul id="listCatExpense" class="space-y-2.5 max-h-[400px] overflow-y-auto pr-2"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        Chart.register(ChartDataLabels);
+
+        // >>> URL Deployment ของ Apps Script <<<
+        const API_URL = "https://script.google.com/macros/s/AKfycbwqPGDlX03FBdWESw5Op9NETsQeEIjDB1z3s_rC69PEws-vgv9MdIC2-35i5XTWB0tu1A/exec";
+
+        // >>> ลิงก์ไฟล์ .apk (อัปโหลดไฟล์ไว้ใน Google Drive แล้วแชร์แบบ "ทุกคนที่มีลิงก์") <<<
+        // รูปแบบลิงก์ดาวน์โหลดตรง: https://drive.google.com/uc?export=download&id=FILE_ID
+        const APK_URL      = "https://drive.google.com/file/d/1FYJrXFlKAlL9pKoPBULkVlt9ugb_nRhB/view?usp=sharing";
+        const APK_FILENAME = "NatsuKung-Finance-v1.0.0.apk";
+        const APK_VERSION  = "1.0.0";
+        const APK_SIZE     = "12 MB";
+
+        const TH_MONTH_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+        const TH_MONTH_FULL  = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+        // ชุดไอคอนให้เลือกในหน้าจัดการหมวดหมู่
+        const ICON_SET = [
+            'fas fa-money-bill-wave','fas fa-sack-dollar','fas fa-gift','fas fa-piggy-bank','fas fa-chart-line',
+            'fas fa-hamburger','fas fa-utensils','fas fa-mug-hot','fas fa-cart-shopping','fas fa-shopping-bag',
+            'fas fa-car','fas fa-gas-pump','fas fa-bus','fas fa-motorcycle','fas fa-plane',
+            'fas fa-house','fas fa-bolt','fas fa-faucet','fas fa-wifi','fas fa-mobile-screen',
+            'fas fa-credit-card','fas fa-file-invoice-dollar','fas fa-hand-holding-dollar','fas fa-briefcase-medical','fas fa-pills',
+            'fas fa-graduation-cap','fas fa-book','fas fa-shirt','fas fa-gamepad','fas fa-film',
+            'fas fa-dumbbell','fas fa-paw','fas fa-heart','fas fa-gem','fas fa-tag'
+        ];
+        const COLOR_SET = ['#10b981','#22c55e','#84cc16','#f59e0b','#f97316','#ef4444','#f43f5e','#ec4899','#d946ef','#a855f7','#8b5cf6','#6366f1','#3b82f6','#0ea5e9','#06b6d4','#14b8a6','#64748b','#111827'];
+
+        // ---------- ระบบลงชื่อเข้าใช้งาน (Auth) ----------
+        const AUTH_STORAGE_KEY = 'natsu_auth_session_v1';
+        let authSession = null; // { token, username, role }
+
+        function loadAuthSession() {
+            try {
+                const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+                authSession = raw ? JSON.parse(raw) : null;
+            } catch (e) { authSession = null; }
+        }
+        function saveAuthSession(session) {
+            authSession = session;
+            try { localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session)); } catch (e) { /* เพิกเฉยได้ */ }
+        }
+        function clearAuthSession() {
+            authSession = null;
+            try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch (e) { /* เพิกเฉยได้ */ }
+        }
+        function showAppScreen() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appHeader').classList.remove('hidden');
+            document.getElementById('appMain').classList.remove('hidden');
+            document.getElementById('currentUserLabel').innerText = authSession ? authSession.username : 'ผู้ใช้';
+        }
+        function showLoginScreen() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('appHeader').classList.add('hidden');
+            document.getElementById('appMain').classList.add('hidden');
+            document.getElementById('userMenuDropdown').classList.add('hidden');
+        }
+        function toggleUserMenu() {
+            document.getElementById('userMenuDropdown').classList.toggle('hidden');
+        }
+        document.addEventListener('click', function (e) {
+            const menu = document.getElementById('userMenuDropdown');
+            const btn = document.getElementById('userMenuBtn');
+            if (!menu || menu.classList.contains('hidden')) return;
+            if (!menu.contains(e.target) && !btn.contains(e.target)) menu.classList.add('hidden');
+        });
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errBox = document.getElementById('loginErrorMsg');
+            errBox.classList.add('hidden');
+            if (!username || !password) return;
+
+            const btn = document.querySelector('#loginForm button[type="submit"]');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> กำลังตรวจสอบ...';
+            try {
+                const res = await callServer('login', { username: username, password: password }, true);
+                if (res && res.success) {
+                    saveAuthSession({ token: res.token, username: res.username, role: res.role });
+                    document.getElementById('loginPassword').value = '';
+                    showAppScreen();
+                    loadCachedData();
+                    loadServerData();
+                } else {
+                    errBox.innerText = (res && res.message) || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+                    errBox.classList.remove('hidden');
+                }
+            } catch (error) {
+                errBox.innerText = error.message || 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
+                errBox.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
+
+        function handleLogout(skipServerCall) {
+            // เรียกแจ้งเซิร์ฟเวอร์ให้ลบเซสชันก่อน (ต้องเรียกก่อนล้าง authSession เพราะ callServer ใช้ token จากตัวแปรนี้)
+            if (!skipServerCall && authSession && authSession.token) {
+                callServer('logout', {}, true).catch(function () { /* เพิกเฉยได้ ล็อกเอาต์ฝั่งไคลเอนต์แล้วอยู่ดี */ });
+            }
+            clearAuthSession();
+            showLoginScreen();
+            document.getElementById('loginForm').reset();
+        }
+
+        function openChangePasswordModal() {
+            document.getElementById('userMenuDropdown').classList.add('hidden');
+            Swal.fire({
+                title: '<span style="font-size:20px"><i class="fas fa-key" style="color:#f59e0b"></i> เปลี่ยนรหัสผ่าน</span>',
+                html:
+                    '<div style="text-align:left;font-size:14px">' +
+                        '<label class="block text-xs font-semibold text-gray-600 mb-1">รหัสผ่านเดิม</label>' +
+                        '<input id="cp-old" type="password" class="inp mb-3" autocomplete="current-password">' +
+                        '<label class="block text-xs font-semibold text-gray-600 mb-1">รหัสผ่านใหม่ (อย่างน้อย 4 ตัวอักษร)</label>' +
+                        '<input id="cp-new" type="password" class="inp mb-3" autocomplete="new-password">' +
+                        '<label class="block text-xs font-semibold text-gray-600 mb-1">ยืนยันรหัสผ่านใหม่</label>' +
+                        '<input id="cp-confirm" type="password" class="inp" autocomplete="new-password">' +
+                    '</div>',
+                showCancelButton: true,
+                confirmButtonColor: '#3b82f6',
+                confirmButtonText: '<i class="fas fa-save"></i> บันทึก',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true,
+                preConfirm: function () {
+                    const oldPass = document.getElementById('cp-old').value;
+                    const newPass = document.getElementById('cp-new').value;
+                    const confirmPass = document.getElementById('cp-confirm').value;
+                    if (!oldPass || !newPass || !confirmPass) { Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบทุกช่อง'); return false; }
+                    if (newPass.length < 4) { Swal.showValidationMessage('รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร'); return false; }
+                    if (newPass !== confirmPass) { Swal.showValidationMessage('รหัสผ่านใหม่และการยืนยันไม่ตรงกัน'); return false; }
+                    return { oldPass: oldPass, newPass: newPass };
+                }
+            }).then(async function (result) {
+                if (!result.isConfirmed) return;
+                Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+                try {
+                    const res = await callServer('changePassword', { oldPassword: result.value.oldPass, newPassword: result.value.newPass });
+                    if (res.success) {
+                        Swal.fire({ title: 'เปลี่ยนรหัสผ่านสำเร็จ', icon: 'success', timer: 1600, showConfirmButton: false });
+                    } else throw new Error(res.message || 'เปลี่ยนรหัสผ่านไม่สำเร็จ');
+                } catch (e) {
+                    Swal.fire('ข้อผิดพลาด', e.message || 'ไม่ทราบสาเหตุ', 'error');
+                }
+            });
+        }
+
+        // ---------- State ----------
+        let transactions = [];
+        let categories = { income: [], expense: [] };
+        let stagedTransactions = [];
+        let charts = { income: null, expense: null };
+        let picker = { income: { icon: 'fas fa-tag', color: '#10b981' }, expense: { icon: 'fas fa-tag', color: '#ef4444' } };
+
+        let currentFilter = { year: new Date().getFullYear(), month: new Date().getMonth() + 1 };
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let filteredHistoryData = [];
+        let currentPageData = [];
+
+        // ---------- Utils ----------
+        function escHtml(s) {
+            return (s === null || s === undefined ? '' : s.toString())
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+        function parseDate(v) {
+            if (!v) return null;
+            if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
+            const s = v.toString().trim();
+            const m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+            if (m) return new Date(parseInt(m[1],10), parseInt(m[2],10) - 1, parseInt(m[3],10));
+            const d = new Date(s);
+            return isNaN(d.getTime()) ? null : d;
+        }
+        function toYMD(d) {
+            if (!d) return '';
+            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        }
+        function formatThaiDate(v) {
+            const d = parseDate(v);
+            if (!d) return '-';
+            return d.getDate() + ' ' + TH_MONTH_SHORT[d.getMonth()] + ' ' + (d.getFullYear() + 543);
+        }
+        function formatThaiMonthYear(year, month) {
+            if (month === 'all') return 'ทั้งปี ' + (year + 543);
+            return TH_MONTH_FULL[month - 1] + ' ' + (year + 543);
+        }
+        function fmt(num) {
+            const n = parseFloat(num);
+            return (isNaN(n) ? 0 : n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        function getMemos(cat) {
+            if (!cat) return [];
+            if (Array.isArray(cat.memos)) return cat.memos.filter(function(m){ return (m||'').toString().trim() !== ''; });
+            if (cat.memo) return [cat.memo];
+            return [];
+        }
+
+        // ---------- APK Download ----------
+        function openAppModal() {
+            document.getElementById('appDownloadModal').classList.remove('hidden');
+            document.getElementById('appDownloadModal').classList.add('flex');
+        }
+        function closeAppModal() {
+            document.getElementById('appDownloadModal').classList.add('hidden');
+            document.getElementById('appDownloadModal').classList.remove('flex');
+        }
+        function dontShowAgain() {
+            localStorage.setItem('natsu_hide_apk_modal', '1');
+            closeAppModal();
+            Swal.fire({ title: 'รับทราบ', text: 'กดไอคอนมือถือมุมขวาบนเพื่อเปิดหน้าดาวน์โหลดได้ทุกเมื่อ', icon: 'info', timer: 2200, showConfirmButton: false });
+        }
+        function setupApkUI() {
+            const link = document.getElementById('apkLink');
+            link.href = APK_URL;
+            link.setAttribute('download', APK_FILENAME);
+            document.getElementById('apkMeta').innerText = 'เวอร์ชัน ' + APK_VERSION + ' · ขนาดประมาณ ' + APK_SIZE + ' · Android 7.0 ขึ้นไป';
+            document.getElementById('apkQr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(APK_URL);
+        }
+        function copyApkLink() {
+            const doneMsg = function () { Swal.fire({ title: 'คัดลอกลิงก์แล้ว', icon: 'success', timer: 1200, showConfirmButton: false }); };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(APK_URL).then(doneMsg).catch(function () { fallbackCopy(APK_URL); doneMsg(); });
+            } else { fallbackCopy(APK_URL); doneMsg(); }
+        }
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text; document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(ta);
+        }
+        // ---------- Init ----------
+        // ตรวจสอบก่อนว่าเคยลงชื่อเข้าใช้งานไว้หรือไม่ (มี token เก็บอยู่ใน localStorage)
+        // ถ้ามี ให้เข้าหน้าแอปเลยแล้วค่อยซิงก์ข้อมูลจาก Google Sheet ทันที เพื่อความเร็วในการโหลดหน้าเว็บ
+        // ถ้ายังไม่เคยเข้าสู่ระบบ ให้แสดงหน้าล็อกอินก่อนเสมอ (ระบบจะตรวจสอบ token อีกครั้งที่ฝั่งเซิร์ฟเวอร์ทุกครั้งที่เรียก API)
+        loadAuthSession();
+        if (authSession && authSession.token) {
+            showAppScreen();
+            loadCachedData();
+            loadServerData();
+        } else {
+            showLoginScreen();
+        }
+
+        window.onload = function () {
+            setupApkUI();
+            // แสดงป๊อปอัปดาวน์โหลดแอปเฉพาะตอนที่ผู้ใช้ลงชื่อเข้าใช้งานอยู่แล้วเท่านั้น เพื่อไม่ให้บังหน้าจอลงชื่อเข้าใช้งาน
+            if (authSession && localStorage.getItem('natsu_hide_apk_modal') !== '1') {
+                setTimeout(openAppModal, 1200);
+            }
+
+            const now = new Date();
+            currentFilter = { year: now.getFullYear(), month: now.getMonth() + 1 };
+            document.getElementById('inputDate').value = toYMD(now);
+            updateInputDateThai();
+            document.getElementById('inputDate').addEventListener('change', updateInputDateThai);
+
+            buildPickers('income'); buildPickers('expense');
+            addMemoField('income'); addMemoField('expense');
+        };
+
+        function updateInputDateThai() {
+            const v = document.getElementById('inputDate').value;
+            document.getElementById('inputDateThai').innerText = v ? 'วันที่ ' + formatThaiDate(v) : '';
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(function (el) { el.classList.remove('active'); });
+            document.querySelectorAll('.nav-link').forEach(function (el) { el.classList.remove('active'); });
+            const t = document.getElementById('tab-' + tabId); if (t) t.classList.add('active');
+            const n = document.getElementById('nav-' + tabId); if (n) n.classList.add('active');
+        }
+
+        // ---------- Server ----------
+        async function callServer(action, payload, isAuthAction) {
+            payload = payload || {};
+            // แนบ token เซสชันไปกับทุกคำขอเสมอ (ยกเว้น action ล็อกอินเองที่ยังไม่ต้องใช้ token)
+            const body = Object.assign({ action: action, token: authSession ? authSession.token : '' }, payload);
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    body: JSON.stringify(body),
+                    headers: { 'Content-Type': 'text/plain' }
+                });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const textResult = await response.text();
+                let result;
+                try { result = JSON.parse(textResult); }
+                catch (parseError) { throw new Error('เซิร์ฟเวอร์ตอบกลับข้อมูลผิดพลาด'); }
+
+                // ถ้าเซสชันหมดอายุหรือไม่ถูกต้อง ให้บังคับออกจากระบบและกลับไปหน้าล็อกอินทันที
+                if (result && result.authRequired && !isAuthAction) {
+                    handleLogout(true);
+                    Swal.fire('เซสชันหมดอายุ', 'กรุณาเข้าสู่ระบบใหม่อีกครั้ง', 'warning');
+                }
+                return result;
+            } catch (error) {
+                console.warn('API Call Error:', error);
+                // ไม่สลับไปใช้ข้อมูลจำลองเมื่อ API ขัดข้อง ให้แสดงข้อมูลแคชเดิม (ถ้ามี) และแจ้งความผิดพลาด
+                throw new Error('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้: ' + (error && error.message ? error.message : 'unknown error'));
+            }
+        }
+
+        function normalizeTransactions(list) {
+            return (list || []).map(function (t) {
+                const d = parseDate(t.date);
+                return {
+                    id: t.id, type: t.type,
+                    date: d ? toYMD(d) : (t.date || ''),
+                    amount: t.amount, category: t.category || '',
+                    detail: t.detail || '', note: t.note || '', timestamp: t.timestamp || ''
+                };
+            });
+        }
+        function normalizeCategories(cats) {
+            const fix = function (arr) {
+                return (arr || []).map(function (c) {
+                    if (typeof c === 'string') c = { name: c };
+                    const style = getCategoryIconAndColor(c.name);
+                    const icon = typeof c.icon === 'string' && /^fas fa-[a-z0-9-]+$/i.test(c.icon) ? c.icon : style.icon;
+                    const color = typeof c.color === 'string' && /^#[0-9a-f]{6}$/i.test(c.color) ? c.color : style.color;
+                    return {
+                        name: String(c.name || ''),
+                        memos: getMemos(c),
+                        icon: icon,
+                        color: color
+                    };
+                });
+            };
+            return { income: fix(cats && cats.income), expense: fix(cats && cats.expense) };
+        }
+
+        function loadCachedData() {
+            const cached = localStorage.getItem('natsu_cached_data_v3');
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    transactions = normalizeTransactions(parsed.t);
+                    categories = normalizeCategories(parsed.c);
+                    refreshAllViews();
+                } catch (e) { console.warn(e); }
+            }
+        }
+        function saveCache() {
+            localStorage.setItem('natsu_cached_data_v3', JSON.stringify({ t: transactions, c: categories }));
+        }
+
+        async function loadServerData() {
+            showLoader(true, 'กำลังซิงค์ข้อมูลล่าสุด...');
+            try {
+                const res = await callServer('getData');
+                if (res.success) {
+                    transactions = normalizeTransactions(res.transactions);
+                    categories = normalizeCategories(res.categories);
+                    saveCache();
+                    refreshAllViews();
+                } else throw new Error(res.message);
+            } catch (error) {
+                console.warn(error);
+                if (transactions.length === 0) {
+                    Swal.fire('โหลดข้อมูลล้มเหลว', 'กรุณาลองรีเฟรชหน้าใหม่อีกครั้ง', 'warning');
+                } else {
+                    Swal.fire('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', 'กำลังแสดงข้อมูลที่เก็บไว้ในเครื่อง ซึ่งอาจไม่ใช่ข้อมูลล่าสุด', 'warning');
+                }
+            } finally { showLoader(false); }
+        }
+
+        function refreshAllViews() {
+            populateYearOptions();
+            updateCategoriesDropdown();
+            renderCategorySettings();
+            renderDashboard();
+        }
+
+        function showLoader(show, text) {
+            const loader = document.getElementById('globalLoader');
+            document.getElementById('loaderText').innerText = text || 'กำลังโหลด...';
+            loader.style.display = show ? 'flex' : 'none';
+        }
+
+        // ---------- ช่วงเวลา ----------
+        function populateYearOptions() {
+            const sel = document.getElementById('filterYear');
+            const years = {};
+            const nowY = new Date().getFullYear();
+            years[nowY] = true; years[currentFilter.year] = true;
+            transactions.forEach(function (t) {
+                const d = parseDate(t.date);
+                if (d) years[d.getFullYear()] = true;
+            });
+            const list = Object.keys(years).map(Number).sort(function (a, b) { return b - a; });
+            sel.innerHTML = '';
+            list.forEach(function (y) {
+                const o = document.createElement('option');
+                o.value = y; o.text = 'ปี พ.ศ. ' + (y + 543) + ' (ค.ศ. ' + y + ')';
+                sel.appendChild(o);
+            });
+            sel.value = currentFilter.year;
+            document.getElementById('filterMonthNum').value = currentFilter.month;
+        }
+        function onPeriodChange() {
+            const y = parseInt(document.getElementById('filterYear').value, 10);
+            const mRaw = document.getElementById('filterMonthNum').value;
+            currentFilter.year = y;
+            currentFilter.month = (mRaw === 'all') ? 'all' : parseInt(mRaw, 10);
+            renderDashboard();
+        }
+        function stepMonth(delta) {
+            if (currentFilter.month === 'all') { currentFilter.year += delta; }
+            else {
+                let m = currentFilter.month + delta, y = currentFilter.year;
+                if (m < 1) { m = 12; y--; } else if (m > 12) { m = 1; y++; }
+                currentFilter.month = m; currentFilter.year = y;
+            }
+            populateYearOptions(); renderDashboard();
+        }
+        function goCurrentMonth() {
+            const now = new Date();
+            currentFilter = { year: now.getFullYear(), month: now.getMonth() + 1 };
+            populateYearOptions(); renderDashboard();
+        }
+        function jumpToPeriod(year, month) {
+            currentFilter = { year: year, month: month };
+            populateYearOptions(); renderDashboard();
+            document.getElementById('tab-dashboard').scrollIntoView({ behavior: 'smooth' });
+        }
+        function inSelectedPeriod(t) {
+            const d = parseDate(t.date);
+            if (!d) return false;
+            if (d.getFullYear() !== currentFilter.year) return false;
+            if (currentFilter.month === 'all') return true;
+            return (d.getMonth() + 1) === currentFilter.month;
+        }
+        function getPeriodTransactions() { return transactions.filter(inSelectedPeriod); }
+
+        function calculateCarryOverBalance() {
+            const start = (currentFilter.month === 'all')
+                ? new Date(currentFilter.year, 0, 1)
+                : new Date(currentFilter.year, currentFilter.month - 1, 1);
+            let inc = 0, exp = 0;
+            transactions.forEach(function (t) {
+                const d = parseDate(t.date);
+                if (d && d < start) {
+                    const amt = parseFloat(t.amount) || 0;
+                    if (t.type === 'income') inc += amt; else exp += amt;
+                }
+            });
+            return inc - exp;
+        }
+
+        // ---------- Dashboard ----------
+        function renderDashboard() {
+            const periodData = getPeriodTransactions();
+            const carryOver = calculateCarryOverBalance();
+
+            let incTotal = 0, expTotal = 0, incMap = {}, expMap = {};
+            periodData.forEach(function (t) {
+                const amt = parseFloat(t.amount) || 0;
+                if (t.type === 'income') {
+                    incTotal += amt;
+                    incMap[t.category] = (incMap[t.category] || 0) + amt;
+                } else {
+                    expTotal += amt;
+                    const label = (t.category === 'สินเชื่อ, ค่าอินเตอร์เน็ต' && t.detail) ? ('สินเชื่อ (' + t.detail + ')') : t.category;
+                    expMap[label] = (expMap[label] || 0) + amt;
+                }
+            });
+
+            document.getElementById('stat-income').innerText  = fmt(incTotal);
+            document.getElementById('stat-expense').innerText = fmt(expTotal);
+            document.getElementById('stat-balance').innerText = fmt(carryOver + incTotal - expTotal);
+            document.getElementById('stat-carryover').innerText = 'ยอดยกมาสะสม: ' + fmt(carryOver) + ' บาท';
+
+            const label = formatThaiMonthYear(currentFilter.year, currentFilter.month);
+            document.getElementById('periodLabel').innerText = label;
+            document.getElementById('historyPeriodLabel').innerText = '(' + label + ')';
+
+            renderCharts(incMap, expMap);
+            renderMonthlyOverview();
+            populateFilterCategoryOptions();
+            applyFilters();
+        }
+
+        function renderCharts(incomeMap, expenseMap) {
+            const options = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { font: { family: 'Sarabun', size: 12 } } },
+                    tooltip: { callbacks: { label: function (ctx) { return ctx.label + ': ฿' + ctx.parsed.toLocaleString('th-TH'); } } },
+                    datalabels: {
+                        formatter: function (val, ctx) {
+                            const sum = ctx.chart.data.datasets[0].data.reduce(function (a, b) { return a + b; }, 0);
+                            return sum === 0 ? '' : (val * 100 / sum).toFixed(1) + '%';
+                        },
+                        color: '#fff', font: { weight: 'bold', family: 'Sarabun' }
+                    }
+                }
+            };
+            const colorFor = function (label) { return getCategoryIconAndColor(label).color; };
+
+            if (charts.income) charts.income.destroy();
+            if (charts.expense) charts.expense.destroy();
+
+            charts.income = new Chart(document.getElementById('incomeChart'), {
+                type: 'pie',
+                data: { labels: Object.keys(incomeMap), datasets: [{ data: Object.values(incomeMap), backgroundColor: Object.keys(incomeMap).map(colorFor) }] },
+                options: options
+            });
+            charts.expense = new Chart(document.getElementById('expenseChart'), {
+                type: 'pie',
+                data: { labels: Object.keys(expenseMap), datasets: [{ data: Object.values(expenseMap), backgroundColor: Object.keys(expenseMap).map(colorFor) }] },
+                options: options
+            });
+        }
+
+        function renderMonthlyOverview() {
+            const tbody = document.getElementById('monthlyOverviewBody');
+            const empty = document.getElementById('overviewEmpty');
+            tbody.innerHTML = '';
+
+            const map = {};
+            transactions.forEach(function (t) {
+                const d = parseDate(t.date); if (!d) return;
+                const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+                if (!map[key]) map[key] = { y: d.getFullYear(), m: d.getMonth() + 1, inc: 0, exp: 0, count: 0 };
+                const amt = parseFloat(t.amount) || 0;
+                if (t.type === 'income') map[key].inc += amt; else map[key].exp += amt;
+                map[key].count++;
+            });
+
+            const keys = Object.keys(map).sort();
+            if (keys.length === 0) { empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+
+            let running = 0;
+            const rows = keys.map(function (k) {
+                const it = map[k];
+                running += (it.inc - it.exp);
+                return { it: it, running: running };
+            }).reverse();
+
+            rows.forEach(function (r) {
+                const it = r.it;
+                const net = it.inc - it.exp;
+                const active = (currentFilter.year === it.y && currentFilter.month === it.m);
+                const tr = document.createElement('tr');
+                tr.className = 'cursor-pointer transition ' + (active ? 'bg-pink-50' : 'hover:bg-pink-50/50');
+                tr.onclick = function () { jumpToPeriod(it.y, it.m); };
+                tr.innerHTML =
+                    '<td class="p-3 font-bold text-gray-700"><i class="fas fa-calendar-alt ' + (active ? 'text-pink-500' : 'text-gray-300') + ' mr-2"></i>' + formatThaiMonthYear(it.y, it.m) + '</td>' +
+                    '<td class="p-3 text-center text-gray-500">' + it.count + '</td>' +
+                    '<td class="p-3 text-right text-green-600 font-semibold">' + fmt(it.inc) + '</td>' +
+                    '<td class="p-3 text-right text-red-600 font-semibold">' + fmt(it.exp) + '</td>' +
+                    '<td class="p-3 text-right font-bold ' + (net >= 0 ? 'text-green-700' : 'text-red-700') + '">' + (net >= 0 ? '+' : '') + fmt(net) + '</td>' +
+                    '<td class="p-3 text-right text-blue-700 font-bold">' + fmt(r.running) + '</td>';
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ---------- ตัวกรอง ----------
+        function toggleAdvancedFilter() {
+            document.getElementById('advancedFilterBox').classList.toggle('hidden');
+            document.getElementById('btnToggleFilter').classList.toggle('bg-pink-50');
+        }
+        function populateFilterCategoryOptions() {
+            const sel = document.getElementById('fltCategory');
+            const prev = sel.value;
+            const names = {};
+            getPeriodTransactions().forEach(function (t) { if (t.category) names[t.category] = true; });
+            sel.innerHTML = '<option value="all">ทั้งหมด</option>';
+            Object.keys(names).sort().forEach(function (n) {
+                const o = document.createElement('option'); o.value = n; o.text = n; sel.appendChild(o);
+            });
+            let found = false;
+            Array.from(sel.options).forEach(function (o) { if (o.value === prev) found = true; });
+            sel.value = found ? prev : 'all';
+        }
+        function resetFilters() {
+            document.getElementById('fltKeyword').value = '';
+            document.getElementById('fltType').value = 'all';
+            document.getElementById('fltCategory').value = 'all';
+            document.getElementById('fltDateFrom').value = '';
+            document.getElementById('fltDateTo').value = '';
+            document.getElementById('fltMin').value = '';
+            document.getElementById('fltMax').value = '';
+            document.getElementById('fltSort').value = 'date_desc';
+            applyFilters();
+        }
+        function changePerPage() {
+            itemsPerPage = parseInt(document.getElementById('fltPerPage').value, 10) || 10;
+            currentPage = 1; renderHistoryTable();
+        }
+        function applyFilters() {
+            const kw   = document.getElementById('fltKeyword').value.toLowerCase().trim();
+            const type = document.getElementById('fltType').value;
+            const cat  = document.getElementById('fltCategory').value;
+            const from = document.getElementById('fltDateFrom').value;
+            const to   = document.getElementById('fltDateTo').value;
+            const min  = parseFloat(document.getElementById('fltMin').value);
+            const max  = parseFloat(document.getElementById('fltMax').value);
+            const sort = document.getElementById('fltSort').value;
+
+            let data = getPeriodTransactions().filter(function (t) {
+                if (type !== 'all' && t.type !== type) return false;
+                if (cat !== 'all' && t.category !== cat) return false;
+                if (from && t.date < from) return false;
+                if (to && t.date > to) return false;
+                const amt = parseFloat(t.amount) || 0;
+                if (!isNaN(min) && amt < min) return false;
+                if (!isNaN(max) && amt > max) return false;
+                if (kw) {
+                    const hay = (t.id + ' ' + t.category + ' ' + (t.detail || '') + ' ' + (t.note || '') + ' ' + t.amount + ' ' + formatThaiDate(t.date)).toLowerCase();
+                    if (hay.indexOf(kw) === -1) return false;
+                }
+                return true;
+            });
+
+            data.sort(function (a, b) {
+                const da = parseDate(a.date), db = parseDate(b.date);
+                const aa = parseFloat(a.amount) || 0, ab = parseFloat(b.amount) || 0;
+                switch (sort) {
+                    case 'date_asc':    return da - db;
+                    case 'amount_desc': return ab - aa;
+                    case 'amount_asc':  return aa - ab;
+                    case 'cat_asc':     return (a.category || '').localeCompare(b.category || '', 'th');
+                    default:            return db - da;
+                }
+            });
+
+            filteredHistoryData = data;
+            currentPage = 1;
+            renderFilterSummary();
+            renderHistoryTable();
+        }
+        function renderFilterSummary() {
+            let inc = 0, exp = 0;
+            filteredHistoryData.forEach(function (t) {
+                const amt = parseFloat(t.amount) || 0;
+                if (t.type === 'income') inc += amt; else exp += amt;
+            });
+            document.getElementById('filterSummary').innerHTML =
+                '<span class="px-3 py-1.5 rounded-full bg-gray-100 border border-gray-200 text-gray-700 font-semibold"><i class="fas fa-list text-gray-500"></i> ' + filteredHistoryData.length + ' รายการ</span>' +
+                '<span class="px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-green-700 font-semibold"><i class="fas fa-arrow-down text-green-500"></i> รับ ' + fmt(inc) + '</span>' +
+                '<span class="px-3 py-1.5 rounded-full bg-red-50 border border-red-200 text-red-700 font-semibold"><i class="fas fa-arrow-up text-red-500"></i> จ่าย ' + fmt(exp) + '</span>' +
+                '<span class="px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-semibold"><i class="fas fa-equals text-blue-500"></i> สุทธิ ' + fmt(inc - exp) + '</span>';
+        }
+
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            const emptyState = document.getElementById('historyEmpty');
+            tbody.innerHTML = '';
+
+            const total = filteredHistoryData.length;
+            const pages = Math.ceil(total / itemsPerPage) || 1;
+            if (currentPage > pages) currentPage = pages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, total);
+            currentPageData = filteredHistoryData.slice(startIdx, endIdx);
+
+            document.getElementById('pageNumberDisplay').innerText = currentPage + ' / ' + pages;
+            document.getElementById('pageInfo').innerText = 'แสดงรายการ ' + (total > 0 ? startIdx + 1 : 0) + ' - ' + endIdx + ' จาก ' + total;
+
+            if (currentPageData.length === 0) { emptyState.classList.remove('hidden'); return; }
+            emptyState.classList.add('hidden');
+
+            currentPageData.forEach(function (t, idx) {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-pink-50/50 transition-colors';
+                const isInc = t.type === 'income';
+                const badge = isInc
+                    ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold whitespace-nowrap border border-green-200"><i class="fas fa-arrow-down"></i> รับ</span>'
+                    : '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold whitespace-nowrap border border-red-200"><i class="fas fa-arrow-up"></i> จ่าย</span>';
+
+                let desc = '<div class="font-bold text-gray-800">' + escHtml(t.category) + '</div>';
+                let sub = escHtml(t.note || '');
+                if (t.detail) sub = '<span class="text-[11px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded mr-1">' + escHtml(t.detail) + '</span> ' + sub;
+                if (sub.trim()) desc += '<div class="text-xs text-gray-500 mt-1">' + sub + '</div>';
+
+                const style = getCategoryIconAndColor(t.category);
+
+                tr.innerHTML =
+                    '<td class="p-3 text-xs text-black font-medium whitespace-nowrap">' + escHtml(t.id || '-') + '</td>' +
+                    '<td class="p-3 whitespace-nowrap text-gray-700 font-medium">' + formatThaiDate(t.date) + '</td>' +
+                    '<td class="p-3">' + badge + '</td>' +
+                    '<td class="p-3 min-w-[220px]"><div class="flex items-start gap-3">' +
+                        '<div class="mt-1 w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-white text-sm shadow-sm" style="background-color:' + style.color + '"><i class="' + style.icon + '"></i></div>' +
+                        '<div>' + desc + '</div></div></td>' +
+                    '<td class="p-3 text-right font-bold ' + (isInc ? 'text-green-600' : 'text-red-600') + ' whitespace-nowrap text-base">' + (isInc ? '+' : '-') + fmt(t.amount) + '</td>' +
+                    '<td class="p-3 text-center whitespace-nowrap">' +
+                        '<div class="flex gap-2 justify-center">' +
+                        '<button onclick="openEditTransaction(' + idx + ')" title="แก้ไข" class="text-blue-500 hover:text-white hover:bg-blue-500 bg-blue-50 border border-blue-100 p-2 rounded-lg transition w-8 h-8 flex items-center justify-center shadow-sm"><i class="fas fa-pen text-sm"></i></button>' +
+                        '<button onclick="confirmDeleteTransaction(' + idx + ')" title="ลบ" class="text-red-400 hover:text-white hover:bg-red-500 bg-red-50 border border-red-100 p-2 rounded-lg transition w-8 h-8 flex items-center justify-center shadow-sm"><i class="fas fa-trash-alt text-sm"></i></button>' +
+                        '</div></td>';
+                tbody.appendChild(tr);
+            });
+        }
+        function nextPage() {
+            if (currentPage < Math.ceil(filteredHistoryData.length / itemsPerPage)) { currentPage++; renderHistoryTable(); }
+        }
+        function prevPage() { if (currentPage > 1) { currentPage--; renderHistoryTable(); } }
+
+        // ---------- แก้ไขรายการ ----------
+        function buildCategoryOptions(type, selected) {
+            let html = '';
+            categories[type].forEach(function (c) {
+                html += '<option value="' + escHtml(c.name) + '"' + (c.name === selected ? ' selected' : '') + '>' + escHtml(c.name) + '</option>';
+            });
+            if (selected && !categories[type].some(function (c) { return c.name === selected; })) {
+                html += '<option value="' + escHtml(selected) + '" selected>' + escHtml(selected) + ' (เดิม)</option>';
+            }
+            return html;
+        }
+        window.swalEditTypeChanged = function () {
+            const type = document.getElementById('swal-type').value;
+            document.getElementById('swal-category').innerHTML = buildCategoryOptions(type, '');
+        };
+
+        function openEditTransaction(idx) {
+            const t = currentPageData[idx];
+            if (!t) return;
+            Swal.fire({
+                title: '<span style="font-size:20px"><i class="fas fa-pen-to-square" style="color:#3b82f6"></i> แก้ไขรายการ</span>',
+                width: 560,
+                html:
+                    '<div style="text-align:left;font-size:14px" class="space-y-3">' +
+                        '<div class="text-xs text-gray-500">รหัส: <b>' + escHtml(t.id) + '</b></div>' +
+                        '<div><label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-right-left" style="color:#6366f1"></i> ประเภท</label>' +
+                        '<select id="swal-type" class="inp" onchange="swalEditTypeChanged()">' +
+                            '<option value="income"' + (t.type === 'income' ? ' selected' : '') + '>รายรับ</option>' +
+                            '<option value="expense"' + (t.type === 'expense' ? ' selected' : '') + '>รายจ่าย</option>' +
+                        '</select></div>' +
+                        '<div class="grid grid-cols-2 gap-3">' +
+                            '<div><label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-calendar-days" style="color:#3b82f6"></i> วันที่</label><input type="date" id="swal-date" class="inp" value="' + escHtml(t.date) + '"></div>' +
+                            '<div><label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-coins" style="color:#f59e0b"></i> จำนวนเงิน</label><input type="number" step="0.01" min="0" id="swal-amount" class="inp" value="' + escHtml(t.amount) + '"></div>' +
+                        '</div>' +
+                        '<div><label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-tags" style="color:#8b5cf6"></i> หมวดหมู่</label><select id="swal-category" class="inp">' + buildCategoryOptions(t.type, t.category) + '</select></div>' +
+                        '<div><label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-receipt" style="color:#ef4444"></i> รายละเอียด (ถ้ามี)</label><input type="text" id="swal-detail" class="inp" value="' + escHtml(t.detail || '') + '"></div>' +
+                        '<div><label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-note-sticky" style="color:#14b8a6"></i> บันทึกช่วยจำ</label><input type="text" id="swal-note" class="inp" value="' + escHtml(t.note || '') + '"></div>' +
+                    '</div>',
+                showCancelButton: true,
+                confirmButtonColor: '#3b82f6',
+                confirmButtonText: '<i class="fas fa-save"></i> บันทึกการแก้ไข',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true,
+                focusConfirm: false,
+                preConfirm: function () {
+                    const date = document.getElementById('swal-date').value;
+                    const amount = document.getElementById('swal-amount').value;
+                    const category = document.getElementById('swal-category').value;
+                    if (!date) { Swal.showValidationMessage('กรุณาระบุวันที่'); return false; }
+                    if (!amount || parseFloat(amount) < 0) { Swal.showValidationMessage('กรุณาระบุจำนวนเงินให้ถูกต้อง'); return false; }
+                    if (!category) { Swal.showValidationMessage('กรุณาเลือกหมวดหมู่'); return false; }
+                    return {
+                        type: document.getElementById('swal-type').value,
+                        date: date, amount: amount, category: category,
+                        detail: document.getElementById('swal-detail').value.trim(),
+                        note: document.getElementById('swal-note').value.trim()
+                    };
+                }
+            }).then(async function (result) {
+                if (!result.isConfirmed) return;
+                const data = result.value;
+                Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+                try {
+                    const res = await callServer('updateTransaction', { id: t.id, data: data });
+                    if (res.success) {
+                        const i = transactions.findIndex(function (x) { return x.id.toString() === t.id.toString(); });
+                        if (i !== -1) transactions[i] = Object.assign({}, transactions[i], data);
+                        saveCache(); populateYearOptions(); renderDashboard();
+                        Swal.fire({ title: 'แก้ไขสำเร็จ!', icon: 'success', timer: 1500, showConfirmButton: false });
+                    } else throw new Error();
+                } catch (e) { Swal.fire('แก้ไขไม่สำเร็จ', 'การเชื่อมต่อขัดข้อง', 'error'); }
+            });
+        }
+
+        function confirmDeleteTransaction(idx) {
+            const t = currentPageData[idx];
+            if (!t) return;
+            Swal.fire({
+                title: 'ยืนยันการลบรายการ?',
+                html: '<b>' + escHtml(t.id) + '</b><br>' + escHtml(t.category) + ' ' + fmt(t.amount) + ' บาท<br><span class="text-sm text-gray-500">วันที่ ' + formatThaiDate(t.date) + '</span><br><span class="text-sm text-red-500">ลบแล้วจะไม่สามารถกู้คืนได้</span>',
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#dc2743', cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-trash"></i> ลบข้อมูล', cancelButtonText: 'ยกเลิก', reverseButtons: true
+            }).then(async function (result) {
+                if (!result.isConfirmed) return;
+                Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+                try {
+                    const res = await callServer('deleteTransaction', { id: t.id });
+                    if (res.success) {
+                        transactions = transactions.filter(function (x) { return x.id.toString() !== t.id.toString(); });
+                        saveCache(); renderDashboard();
+                        Swal.fire({ title: 'ลบสำเร็จ!', icon: 'success', timer: 1400, showConfirmButton: false });
+                    } else throw new Error();
+                } catch (error) { Swal.fire('ลบไม่สำเร็จ', 'การเชื่อมต่อขัดข้อง', 'error'); }
+            });
+        }
+
+        // ---------- ฟอร์มบันทึกรายการ ----------
+        function updateCategoriesDropdown() {
+            const typeEl = document.querySelector('input[name="type"]:checked');
+            if (!typeEl) return;
+            const type = typeEl.value;
+            const select = document.getElementById('inputCategory');
+            select.innerHTML = '';
+            (categories[type] || []).forEach(function (catObj) {
+                const opt = document.createElement('option');
+                opt.value = catObj.name; opt.innerText = catObj.name;
+                select.appendChild(opt);
+            });
+            handleCategoryChange();
+        }
+
+        function renderCatPreview(catObj, name) {
+            const style = catObj ? { icon: catObj.icon, color: catObj.color } : getCategoryIconAndColor(name);
+            document.getElementById('catPreview').innerHTML =
+                '<span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-white text-xs font-bold shadow-sm" style="background-color:' + style.color + '">' +
+                '<i class="' + style.icon + '"></i> ' + escHtml(name || '-') + '</span>';
+        }
+
+        function handleCategoryChange() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const cat = document.getElementById('inputCategory').value;
+            const catObj = (categories[type] || []).find(function (c) { return c.name === cat; });
+            renderCatPreview(catObj, cat);
+
+            const memos = getMemos(catObj);
+            const wrap = document.getElementById('memoSuggestWrap');
+            const sel = document.getElementById('inputMemoSelect');
+            sel.innerHTML = '<option value="">-- ไม่ใช้บันทึกช่วยจำ --</option>';
+            memos.forEach(function (m) {
+                const o = document.createElement('option'); o.value = m; o.text = m; sel.appendChild(o);
+            });
+
+            if (memos.length > 0) {
+                wrap.classList.remove('hidden');
+                sel.value = memos[0];
+                document.getElementById('inputNote').value = memos[0];
+            } else {
+                wrap.classList.add('hidden');
+                document.getElementById('inputNote').value = '';
+            }
+
+            const group = document.getElementById('specialDetailGroup');
+            if (cat === 'สินเชื่อ, ค่าอินเตอร์เน็ต') {
+                group.classList.remove('hidden');
+                document.getElementById('inputSpecialDetail').required = true;
+                checkSpecialDetailsLimit();
+            } else {
+                group.classList.add('hidden');
+                document.getElementById('inputSpecialDetail').required = false;
+                document.getElementById('inputSpecialDetail').value = '';
+                document.getElementById('otherDetailWrap').classList.add('hidden');
+            }
+        }
+
+        function applyMemoSuggest() {
+            document.getElementById('inputNote').value = document.getElementById('inputMemoSelect').value;
+        }
+        function handleSpecialDetailChange() {
+            const val = document.getElementById('inputSpecialDetail').value;
+            const wrap = document.getElementById('otherDetailWrap');
+            const otherInput = document.getElementById('inputOtherDetail');
+            if (val === 'อื่นๆ') { wrap.classList.remove('hidden'); otherInput.required = true; }
+            else { wrap.classList.add('hidden'); otherInput.required = false; }
+            checkSpecialDetailsLimit();
+        }
+        function checkSpecialDetailsLimit() {
+            updateInputDateThai();
+            if (document.getElementById('inputCategory').value !== 'สินเชื่อ, ค่าอินเตอร์เน็ต') return;
+            const dateStr = document.getElementById('inputDate').value;
+            if (!dateStr) return;
+
+            const selected = parseDate(dateStr);
+            const combined = transactions.concat(stagedTransactions);
+            const usedDetails = combined.filter(function (t) {
+                const d = parseDate(t.date);
+                return d && d.getFullYear() === selected.getFullYear() && d.getMonth() === selected.getMonth()
+                    && t.category === 'สินเชื่อ, ค่าอินเตอร์เน็ต' && t.detail;
+            }).map(function (t) { return t.detail; });
+
+            const selectEl = document.getElementById('inputSpecialDetail');
+            const warningEl = document.getElementById('specialDetailWarning');
+            let isDisabled = false;
+
+            Array.from(selectEl.options).forEach(function (opt) {
+                if (opt.value && opt.value !== 'อื่นๆ') {
+                    if (usedDetails.indexOf(opt.value) !== -1) {
+                        opt.disabled = true; opt.text = '🔒 [เลือกแล้ว] ' + opt.value;
+                        if (selectEl.value === opt.value) isDisabled = true;
+                    } else { opt.disabled = false; opt.text = opt.value; }
+                }
+            });
+
+            const btn = document.getElementById('btnStageForm');
+            if (isDisabled) {
+                warningEl.classList.remove('hidden');
+                btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                warningEl.classList.add('hidden');
+                btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function stageTransaction(e) {
+            e.preventDefault();
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const date = document.getElementById('inputDate').value;
+            const category = document.getElementById('inputCategory').value;
+            let detail = '';
+            if (category === 'สินเชื่อ, ค่าอินเตอร์เน็ต') {
+                const sp = document.getElementById('inputSpecialDetail').value;
+                detail = (sp === 'อื่นๆ') ? document.getElementById('inputOtherDetail').value : sp;
+            }
+            stagedTransactions.push({
+                type: type, date: date,
+                amount: document.getElementById('inputAmount').value,
+                category: category, detail: detail,
+                note: document.getElementById('inputNote').value,
+                timestamp: new Date().toISOString()
+            });
+            renderStagedList();
+
+            document.getElementById('addForm').reset();
+            document.getElementById('inputDate').value = date;
+            updateInputDateThai();
+
+            if (category === 'สินเชื่อ, ค่าอินเตอร์เน็ต') {
+                document.getElementById('inputCategory').value = category;
+                handleCategoryChange();
+            } else updateCategoriesDropdown();
+        }
+
+        function renderStagedList() {
+            const ul = document.getElementById('stagedList');
+            const btnSubmit = document.getElementById('btnSubmitBatch');
+            document.getElementById('stagedCount').innerText = stagedTransactions.length + ' รายการ';
+            ul.innerHTML = '';
+
+            if (stagedTransactions.length === 0) {
+                document.getElementById('stagedEmpty').classList.remove('hidden');
+                btnSubmit.disabled = true; btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+                return;
+            }
+            document.getElementById('stagedEmpty').classList.add('hidden');
+            btnSubmit.disabled = false; btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            stagedTransactions.forEach(function (t, i) {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm border border-gray-100 mb-2 text-sm';
+                const style = getCategoryIconAndColor(t.category);
+                let desc = '<span class="font-bold text-gray-700">' + escHtml(t.category) + '</span>';
+                if (t.detail) desc += ' <span class="text-xs bg-gray-100 px-1.5 py-0.5 rounded ml-1">' + escHtml(t.detail) + '</span>';
+
+                li.innerHTML =
+                    '<div class="flex-grow flex items-center gap-3">' +
+                        '<div class="w-9 h-9 rounded-full flex items-center justify-center text-white shadow-sm shrink-0" style="background-color:' + style.color + '"><i class="' + style.icon + '"></i></div>' +
+                        '<div><div class="font-bold text-base ' + (t.type === 'income' ? 'text-green-600' : 'text-red-600') + '">' + (t.type === 'income' ? '+' : '-') + '฿' + fmt(t.amount) + '</div>' +
+                        '<div class="text-xs text-gray-500">' + formatThaiDate(t.date) + ' | ' + desc + '</div></div>' +
+                    '</div>' +
+                    '<button onclick="removeStaged(' + i + ')" class="text-red-400 hover:text-white hover:bg-red-500 p-2 rounded-lg transition border border-red-100 bg-red-50 shadow-sm ml-2"><i class="fas fa-times"></i></button>';
+                ul.appendChild(li);
+            });
+        }
+        function removeStaged(index) {
+            stagedTransactions.splice(index, 1);
+            renderStagedList(); checkSpecialDetailsLimit();
+        }
+
+        async function submitBatchToServer() {
+            if (stagedTransactions.length === 0) return;
+            Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+            try {
+                const res = await callServer('addTransactionsBatch', { data: stagedTransactions });
+                if (res.success) {
+                    Swal.fire({ title: 'บันทึกสำเร็จ!', text: 'เพิ่มรายการลงฐานข้อมูลเรียบร้อย', icon: 'success', timer: 1600, showConfirmButton: false });
+                    stagedTransactions = [];
+                    renderStagedList(); loadServerData();
+                } else throw new Error();
+            } catch (error) { Swal.fire('บันทึกไม่สำเร็จ', 'กรุณาตรวจสอบการเชื่อมต่อ', 'error'); }
+        }
+
+        // ---------- ไอคอน & สีของหมวดหมู่ ----------
+        function getCategoryIconAndColor(name) {
+            name = (name || '').toString();
+            const found = (categories.income || []).concat(categories.expense || [])
+                .find(function (c) { return c.name === name || name.indexOf(c.name) === 0; });
+            if (found && found.icon && found.color) return { icon: found.icon, color: found.color };
+
+            const lower = name.toLowerCase();
+            let icon = 'fas fa-tag', color = '#9ca3af';
+            if (lower.indexOf('เงินเดือน') !== -1) { icon = 'fas fa-money-bill-wave'; color = '#10b981'; }
+            else if (lower.indexOf('โบนัส') !== -1) { icon = 'fas fa-gift'; color = '#f59e0b'; }
+            else if (lower.indexOf('อาหาร') !== -1 || lower.indexOf('ข้าว') !== -1) { icon = 'fas fa-utensils'; color = '#f97316'; }
+            else if (lower.indexOf('น้ำมัน') !== -1 || lower.indexOf('เดินทาง') !== -1) { icon = 'fas fa-car'; color = '#3b82f6'; }
+            else if (lower.indexOf('สินเชื่อ') !== -1 || lower.indexOf('ผ่อน') !== -1) { icon = 'fas fa-credit-card'; color = '#ef4444'; }
+            else if (lower.indexOf('เน็ต') !== -1 || lower.indexOf('โทร') !== -1) { icon = 'fas fa-wifi'; color = '#8b5cf6'; }
+            else if (lower.indexOf('บ้าน') !== -1 || lower.indexOf('หอ') !== -1) { icon = 'fas fa-house'; color = '#06b6d4'; }
+            else if (lower.indexOf('ไฟ') !== -1) { icon = 'fas fa-bolt'; color = '#eab308'; }
+            else if (lower.indexOf('น้ำ') !== -1) { icon = 'fas fa-faucet'; color = '#0ea5e9'; }
+            else if (lower.indexOf('รักษา') !== -1 || lower.indexOf('ยา') !== -1) { icon = 'fas fa-pills'; color = '#ec4899'; }
+            else if (lower.indexOf('ช้อป') !== -1 || lower.indexOf('ซื้อ') !== -1) { icon = 'fas fa-shopping-bag'; color = '#f43f5e'; }
+            else if (lower.indexOf('ลงทุน') !== -1) { icon = 'fas fa-chart-line'; color = '#14b8a6'; }
+            else {
+                const colors = ['#84cc16', '#0ea5e9', '#6366f1', '#a855f7', '#d946ef'];
+                let hash = 0;
+                for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+                color = colors[Math.abs(hash) % colors.length];
+            }
+            return { icon: icon, color: color };
+        }
+
+        // ตัวเลือกไอคอน/สี ในฟอร์มเพิ่มหมวดหมู่
+        function buildPickers(type) {
+            const iconBox = document.getElementById(type === 'income' ? 'iconPickerIncome' : 'iconPickerExpense');
+            const colorBox = document.getElementById(type === 'income' ? 'colorPickerIncome' : 'colorPickerExpense');
+            iconBox.innerHTML = ''; colorBox.innerHTML = '';
+
+            ICON_SET.forEach(function (ic, i) {
+                const d = document.createElement('div');
+                d.className = 'icon-pick' + (i === 0 ? ' sel' : '');
+                d.style.background = picker[type].color;
+                d.innerHTML = '<i class="' + ic + '"></i>';
+                d.onclick = function () {
+                    picker[type].icon = ic;
+                    iconBox.querySelectorAll('.icon-pick').forEach(function (x) { x.classList.remove('sel'); });
+                    d.classList.add('sel');
+                };
+                iconBox.appendChild(d);
+            });
+            picker[type].icon = ICON_SET[0];
+
+            COLOR_SET.forEach(function (c, i) {
+                const d = document.createElement('div');
+                d.className = 'color-pick';
+                d.style.background = c;
+                d.onclick = function () {
+                    picker[type].color = c;
+                    colorBox.querySelectorAll('.color-pick').forEach(function (x) { x.classList.remove('sel'); });
+                    d.classList.add('sel');
+                    iconBox.querySelectorAll('.icon-pick').forEach(function (x) { x.style.background = c; });
+                };
+                if ((type === 'income' && c === '#10b981') || (type === 'expense' && c === '#ef4444')) {
+                    d.classList.add('sel'); picker[type].color = c;
+                }
+                colorBox.appendChild(d);
+            });
+            iconBox.querySelectorAll('.icon-pick').forEach(function (x) { x.style.background = picker[type].color; });
+        }
+
+        // ช่อง memo หลายรายการ
+        function addMemoField(type, value) {
+            const box = document.getElementById(type === 'income' ? 'memoFieldsIncome' : 'memoFieldsExpense');
+            const row = document.createElement('div');
+            row.className = 'flex gap-2';
+            row.innerHTML =
+                '<div class="field-wrap flex-grow"><i class="fas fa-comment-dots field-ico text-teal-500"></i>' +
+                '<input type="text" class="inp memo-input" placeholder="บันทึกช่วยจำ เช่น ค่าข้าวกลางวัน" value="' + escHtml(value || '') + '"></div>' +
+                '<button type="button" class="px-3 rounded-lg bg-gray-100 text-gray-500 hover:bg-red-500 hover:text-white border border-gray-200 transition"><i class="fas fa-times"></i></button>';
+            row.querySelector('button').onclick = function () {
+                row.remove();
+                if (box.children.length === 0) addMemoField(type);
+            };
+            box.appendChild(row);
+        }
+        function getMemoFieldValues(type) {
+            const box = document.getElementById(type === 'income' ? 'memoFieldsIncome' : 'memoFieldsExpense');
+            return Array.from(box.querySelectorAll('.memo-input'))
+                .map(function (i) { return i.value.trim(); })
+                .filter(function (v) { return v !== ''; });
+        }
+        function clearMemoFields(type) {
+            document.getElementById(type === 'income' ? 'memoFieldsIncome' : 'memoFieldsExpense').innerHTML = '';
+            addMemoField(type);
+        }
+
+        function renderCategorySettings() {
+            const ulIncome = document.getElementById('listCatIncome');
+            const ulExpense = document.getElementById('listCatExpense');
+            ulIncome.innerHTML = ''; ulExpense.innerHTML = '';
+
+            const renderLi = function (type, catObj, index) {
+                const name = catObj.name;
+                const memos = getMemos(catObj);
+                const isSystem = name === 'สินเชื่อ, ค่าอินเตอร์เน็ต';
+                const icon = catObj.icon || getCategoryIconAndColor(name).icon;
+                const color = catObj.color || getCategoryIconAndColor(name).color;
+
+                let memoHtml = memos.length
+                    ? '<div class="mt-1">' + memos.map(function (m) {
+                        return '<span class="memo-chip"><i class="fas fa-comment-alt" style="color:' + color + '"></i>' + escHtml(m) + '</span>';
+                      }).join('') + '</div>'
+                    : '<div class="text-[11px] text-gray-400 mt-0.5">ยังไม่มีบันทึกช่วยจำ</div>';
+
+                return '' +
+                '<li class="flex justify-between items-start bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm transition hover:shadow-md mb-2" style="border-left:4px solid ' + color + '">' +
+                    '<div class="flex items-start gap-3">' +
+                        '<div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-white text-base shadow" style="background-color:' + color + '"><i class="' + icon + '"></i></div>' +
+                        '<div><div class="font-bold text-gray-700 leading-tight">' + escHtml(name) + '<span class="ml-2 text-[10px] text-gray-400">(' + memos.length + ' บันทึกช่วยจำ)</span></div>' + memoHtml + '</div>' +
+                    '</div>' +
+                    (isSystem
+                        ? '<div class="flex flex-col items-end gap-2">' +
+                            '<span class="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full font-bold shadow-inner whitespace-nowrap"><i class="fas fa-lock mr-1"></i> ระบบ</span>' +
+                            '<button onclick="promptEditCategory(\'' + type + '\', ' + index + ')" class="text-blue-500 hover:text-white hover:bg-blue-500 bg-blue-50 border border-blue-100 p-2 rounded-lg transition shadow-sm h-8 w-8 flex items-center justify-center" title="แก้ไขไอคอน/บันทึกช่วยจำ"><i class="fas fa-edit text-sm"></i></button>' +
+                          '</div>'
+                        : '<div class="flex gap-2">' +
+                            '<button onclick="promptEditCategory(\'' + type + '\', ' + index + ')" class="text-blue-500 hover:text-white hover:bg-blue-500 bg-blue-50 border border-blue-100 p-2 rounded-lg transition shadow-sm h-8 w-8 flex items-center justify-center"><i class="fas fa-edit text-sm"></i></button>' +
+                            '<button onclick="confirmDeleteCategory(\'' + type + '\', ' + index + ')" class="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 border border-red-100 p-2 rounded-lg transition shadow-sm h-8 w-8 flex items-center justify-center"><i class="fas fa-trash-alt text-sm"></i></button>' +
+                          '</div>') +
+                '</li>';
+            };
+
+            categories.income.forEach(function (c, i) { ulIncome.innerHTML += renderLi('income', c, i); });
+            categories.expense.forEach(function (c, i) { ulExpense.innerHTML += renderLi('expense', c, i); });
+        }
+
+        async function addCategory(type) {
+            const inputNameEl = document.getElementById(type === 'income' ? 'newCatIncome' : 'newCatExpense');
+            const val = inputNameEl.value.trim();
+            const memos = getMemoFieldValues(type);
+            const icon = picker[type].icon, color = picker[type].color;
+
+            if (!val) return Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อหมวดหมู่', 'warning');
+            if (categories[type].find(function (c) { return c.name === val; })) {
+                return Swal.fire('แจ้งเตือน', 'มีชื่อหมวดหมู่นี้อยู่แล้ว', 'warning');
+            }
+
+            Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+            try {
+                const res = await callServer('addCategory', { type: type, name: val, memos: memos, icon: icon, color: color });
+                if (res.success) {
+                    categories[type].push({ name: val, memos: memos, icon: icon, color: color });
+                    inputNameEl.value = '';
+                    clearMemoFields(type);
+                    saveCache(); renderCategorySettings(); updateCategoriesDropdown();
+                    Swal.fire({ title: 'เพิ่มหมวดหมู่สำเร็จ', icon: 'success', timer: 1400, showConfirmButton: false });
+                } else throw new Error(res.message || 'บันทึกไม่สำเร็จ');
+            } catch (e) { Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกลง Google Sheet ได้: ' + (e.message || 'ไม่ทราบสาเหตุ'), 'error'); }
+        }
+
+        window.swalPicker = { icon: 'fas fa-tag', color: '#6366f1' };
+        window.swalBuildPickers = function () {
+            const iconBox = document.getElementById('swal-icon-box');
+            const colorBox = document.getElementById('swal-color-box');
+            iconBox.innerHTML = ''; colorBox.innerHTML = '';
+            ICON_SET.forEach(function (ic) {
+                const d = document.createElement('div');
+                d.className = 'icon-pick' + (ic === window.swalPicker.icon ? ' sel' : '');
+                d.style.background = window.swalPicker.color;
+                d.innerHTML = '<i class="' + ic + '"></i>';
+                d.onclick = function () {
+                    window.swalPicker.icon = ic;
+                    iconBox.querySelectorAll('.icon-pick').forEach(function (x) { x.classList.remove('sel'); });
+                    d.classList.add('sel');
+                };
+                iconBox.appendChild(d);
+            });
+            COLOR_SET.forEach(function (c) {
+                const d = document.createElement('div');
+                d.className = 'color-pick' + (c === window.swalPicker.color ? ' sel' : '');
+                d.style.background = c;
+                d.onclick = function () {
+                    window.swalPicker.color = c;
+                    colorBox.querySelectorAll('.color-pick').forEach(function (x) { x.classList.remove('sel'); });
+                    d.classList.add('sel');
+                    iconBox.querySelectorAll('.icon-pick').forEach(function (x) { x.style.background = c; });
+                };
+                colorBox.appendChild(d);
+            });
+        };
+        window.swalAddMemo = function (val) {
+            const list = document.getElementById('swal-memo-list');
+            const row = document.createElement('div');
+            row.className = 'flex gap-2 mb-2';
+            row.innerHTML =
+                '<div class="field-wrap flex-grow"><i class="fas fa-comment-dots field-ico" style="color:#14b8a6"></i>' +
+                '<input type="text" class="inp swal-memo-input" placeholder="บันทึกช่วยจำ..." value="' + escHtml(typeof val === 'string' ? val : '') + '"></div>' +
+                '<button type="button" class="px-3 rounded-lg bg-gray-100 text-gray-500 hover:bg-red-500 hover:text-white border border-gray-200"><i class="fas fa-times"></i></button>';
+            row.querySelector('button').onclick = function () { row.remove(); };
+            list.appendChild(row);
+        };
+
+        function promptEditCategory(type, index) {
+            const cat = categories[type][index];
+            if (!cat) return;
+            const oldName = cat.name;
+            const oldMemos = getMemos(cat);
+            const isSystem = oldName === 'สินเชื่อ, ค่าอินเตอร์เน็ต';
+            window.swalPicker = { icon: cat.icon || getCategoryIconAndColor(oldName).icon, color: cat.color || getCategoryIconAndColor(oldName).color };
+
+            Swal.fire({
+                title: '<span style="font-size:20px"><i class="fas fa-sliders" style="color:#8b5cf6"></i> แก้ไขหมวดหมู่</span>',
+                width: 560,
+                html:
+                    '<div style="text-align:left;font-size:14px">' +
+                        '<label class="block text-xs font-semibold text-gray-600 mb-1"><i class="fas fa-tag" style="color:#8b5cf6"></i> ชื่อหมวดหมู่</label>' +
+                        '<input id="swal-cat-name" class="inp" value="' + escHtml(oldName) + '"' + (isSystem ? ' readonly' : '') + '>' +
+                        (isSystem ? '<p class="text-[11px] text-gray-400 mt-1">หมวดหมู่ระบบ แก้ไขชื่อไม่ได้ แต่เปลี่ยนไอคอน/สี/บันทึกช่วยจำได้</p>' : '') +
+                        '<div class="mt-3"><span class="text-xs font-semibold text-gray-600"><i class="fas fa-icons" style="color:#f59e0b"></i> เลือกไอคอน</span>' +
+                        '<div id="swal-icon-box" class="flex flex-wrap gap-2 mt-2 max-h-32 overflow-y-auto"></div></div>' +
+                        '<div class="mt-3"><span class="text-xs font-semibold text-gray-600"><i class="fas fa-palette" style="color:#ec4899"></i> เลือกสี</span>' +
+                        '<div id="swal-color-box" class="flex flex-wrap gap-2 mt-2"></div></div>' +
+                        '<div class="flex items-center justify-between mt-3 mb-1">' +
+                            '<span class="text-xs font-semibold text-gray-600"><i class="fas fa-note-sticky" style="color:#14b8a6"></i> บันทึกช่วยจำ (หลายรายการ)</span>' +
+                            '<button type="button" onclick="swalAddMemo()" class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded-lg hover:bg-blue-100"><i class="fas fa-plus"></i> เพิ่มช่อง</button>' +
+                        '</div>' +
+                        '<div id="swal-memo-list" class="max-h-40 overflow-y-auto pr-1"></div>' +
+                    '</div>',
+                didOpen: function () {
+                    window.swalBuildPickers();
+                    if (oldMemos.length) oldMemos.forEach(function (m) { window.swalAddMemo(m); });
+                    else window.swalAddMemo('');
+                },
+                focusConfirm: false, showCancelButton: true,
+                confirmButtonColor: '#3b82f6',
+                confirmButtonText: '<i class="fas fa-save"></i> บันทึกการแก้ไข',
+                cancelButtonText: 'ยกเลิก', reverseButtons: true,
+                preConfirm: function () {
+                    const newName = document.getElementById('swal-cat-name').value.trim();
+                    const newMemos = Array.from(document.querySelectorAll('.swal-memo-input'))
+                        .map(function (i) { return i.value.trim(); })
+                        .filter(function (v) { return v !== ''; });
+                    if (!newName) { Swal.showValidationMessage('โปรดระบุชื่อหมวดหมู่!'); return false; }
+                    const exists = categories[type].find(function (c) { return c.name === newName; });
+                    if (exists && newName !== oldName) { Swal.showValidationMessage('ชื่อนี้มีอยู่แล้ว!'); return false; }
+                    return { newName: newName, newMemos: newMemos, icon: window.swalPicker.icon, color: window.swalPicker.color };
+                }
+            }).then(async function (result) {
+                if (!result.isConfirmed) return;
+                const v = result.value;
+                Swal.fire({ title: 'กำลังอัปเดต...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+                try {
+                    const res = await callServer('editCategory', { type: type, oldName: oldName, newName: v.newName, newMemos: v.newMemos, icon: v.icon, color: v.color });
+                    if (res.success) {
+                        categories[type][index] = { name: v.newName, memos: v.newMemos, icon: v.icon, color: v.color };
+                        saveCache(); renderCategorySettings(); updateCategoriesDropdown(); renderDashboard();
+                        Swal.fire({ title: 'อัปเดตสำเร็จ', icon: 'success', timer: 1400, showConfirmButton: false });
+                    } else throw new Error(res.message || 'อัปเดตไม่สำเร็จ');
+                } catch (e) { Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกลง Google Sheet ได้: ' + (e.message || 'ไม่ทราบสาเหตุ'), 'error'); }
+            });
+        }
+
+        function confirmDeleteCategory(type, index) {
+            const cat = categories[type][index];
+            if (!cat) return;
+            const name = cat.name;
+            Swal.fire({
+                title: 'ยืนยันการลบหมวดหมู่?',
+                html: 'ต้องการลบหมวดหมู่ <b>' + escHtml(name) + '</b> ใช่หรือไม่?<br><span class="text-sm text-red-500 mt-2 block">รายการที่บันทึกไปแล้วจะยังมีชื่อนี้อยู่</span>',
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#dc2743',
+                confirmButtonText: '<i class="fas fa-trash"></i> ลบ',
+                cancelButtonText: 'ยกเลิก', reverseButtons: true
+            }).then(async function (result) {
+                if (!result.isConfirmed) return;
+                Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+                try {
+                    const res = await callServer('deleteCategory', { type: type, name: name });
+                    if (res.success) {
+                        categories[type] = categories[type].filter(function (c) { return c.name !== name; });
+                        saveCache(); renderCategorySettings(); updateCategoriesDropdown();
+                        Swal.fire({ title: 'ลบสำเร็จ!', icon: 'success', timer: 1400, showConfirmButton: false });
+                    } else throw new Error(res.message || 'ลบไม่สำเร็จ');
+                } catch (e) { Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกลง Google Sheet ได้: ' + (e.message || 'ไม่ทราบสาเหตุ'), 'error'); }
+            });
+        }
+    </script>
+</body>
+</html>
