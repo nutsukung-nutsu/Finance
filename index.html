@@ -67,6 +67,118 @@
             font-size: 0.875rem;
         }
         .inp:focus { outline: none; border-color: #ec4899; box-shadow: 0 0 0 1px #ec4899; }
+        /* ---------- หน้าลงชื่อเข้าใช้ ---------- */
+        .login-screen {
+            overflow-y: auto;
+            background-image:
+                linear-gradient(135deg, rgba(255, 247, 237, .10), rgba(131, 24, 67, .18)),
+                url('https://i.pinimg.com/1200x/8e/b2/27/8eb22742acb5e8f41f9499f2745a9c21.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .login-screen::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(ellipse at 50% 45%, rgba(255,255,255,.05), rgba(71, 24, 50, .18));
+        }
+        .login-card {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            padding: 34px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.82);
+            border-radius: 28px;
+            background: rgba(255, 253, 250, .94);
+            box-shadow: 0 28px 80px rgba(73, 25, 49, .28), 0 4px 16px rgba(73, 25, 49, .10);
+            backdrop-filter: blur(18px);
+            animation: loginRise .55s cubic-bezier(.2,.75,.25,1) both;
+        }
+        .login-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto;
+            height: 5px;
+            background: linear-gradient(90deg, #f6a23a 0%, #ef6658 48%, #c02670 100%);
+        }
+        .login-logo {
+            width: 72px;
+            height: 72px;
+            padding: 4px;
+            border: 1px solid #f5d9cd;
+            border-radius: 22px;
+            background: #fff;
+            box-shadow: 0 8px 20px rgba(192, 38, 112, .14);
+            object-fit: contain;
+        }
+        .login-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 16px;
+            color: #a24b5e;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .02em;
+        }
+        .login-title { margin-top: 5px; color: #4c2639; font-size: 22px; line-height: 1.35; font-weight: 700; }
+        .login-subtitle { margin-top: 4px; color: #806c78; font-size: 14px; }
+        .login-form { margin-top: 28px; display: grid; gap: 18px; text-align: left; }
+        .login-label { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; color: #4c3a47; font-size: 14px; font-weight: 600; }
+        .login-label i { width: 18px; color: #d65a6b; text-align: center; }
+        .login-input-wrap { position: relative; }
+        .login-input-wrap > i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #a697a0; pointer-events: none; }
+        .login-input {
+            width: 100%;
+            height: 52px;
+            padding: 0 14px 0 44px;
+            border: 1px solid #eadde1;
+            border-radius: 14px;
+            outline: none;
+            background: #fffaf8;
+            color: #3c2b36;
+            font: inherit;
+            font-size: 15px;
+            transition: border-color .18s, box-shadow .18s, background .18s;
+        }
+        .login-input::placeholder { color: #aa9da4; }
+        .login-input:focus { border-color: #dc6870; background: #fff; box-shadow: 0 0 0 4px rgba(220,104,112,.14); }
+        .login-submit {
+            display: flex;
+            min-height: 52px;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 0;
+            border-radius: 15px;
+            background: linear-gradient(105deg, #ed9638 0%, #e75f55 52%, #c02670 100%);
+            box-shadow: 0 10px 20px rgba(192,38,112,.20);
+            color: white;
+            font: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .18s, box-shadow .18s, filter .18s;
+        }
+        .login-submit:hover { transform: translateY(-1px); box-shadow: 0 13px 24px rgba(192,38,112,.25); filter: saturate(1.08); }
+        .login-submit:active { transform: translateY(0); }
+        .login-submit:focus-visible { outline: 3px solid rgba(192,38,112,.3); outline-offset: 3px; }
+        .login-submit:disabled { cursor: wait; opacity: .75; transform: none; }
+        .login-footnote { margin-top: 20px; color: #8c7b84; font-size: 12px; text-align: center; }
+        #loginErrorMsg:not(.hidden) { padding: 10px 12px; border: 1px solid #f4c9c7; border-radius: 12px; background: #fff1ef; color: #a33b40; }
+        @keyframes loginRise { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @media (max-width: 480px) {
+            .login-card { max-width: 390px; padding: 28px 22px 24px; border-radius: 24px; }
+            .login-title { font-size: 20px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .login-card { animation: none; }
+            .login-input, .login-submit { transition: none; }
+        }
         .memo-chip {
             display: inline-flex; align-items: center; gap: .25rem;
             background: #f3f4f6; color: #4b5563;
@@ -103,35 +215,36 @@
 <body class="min-h-screen flex flex-col">
 
     <!-- ================= หน้าจอลงชื่อเข้าใช้งาน ================= -->
-    <div id="loginScreen" class="fixed inset-0 z-[70] flex items-center justify-center p-4"
-         style="background-image:url('https://i.pinimg.com/1200x/8e/b2/27/8eb22742acb5e8f41f9499f2745a9c21.jpg'); background-size:cover; background-position:center;">
-        <div class="content-wrapper w-full max-w-sm p-6 sm:p-8">
-            <div class="text-center mb-6">
-                <img src="https://i.pinimg.com/1200x/11/e5/a8/11e5a8444570658f24d1e9349f5b501d.jpg" class="h-16 w-16 mx-auto rounded-2xl shadow-md border border-gray-100 bg-white object-contain mb-3" alt="Logo">
-                <h1 class="text-lg font-bold text-ig">ระบบรายรับ-รายจ่าย</h1>
-                <p class="text-sm text-gray-500">ของนัสซึคุง คุณชายสายเสมอ</p>
+    <div id="loginScreen" class="login-screen fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div class="login-card">
+            <div class="text-center">
+                <img src="https://i.pinimg.com/1200x/11/e5/a8/11e5a8444570658f24d1e9349f5b501d.jpg" class="login-logo mx-auto" alt="โลโก้ระบบรายรับรายจ่าย">
+                <span class="login-kicker"><i class="fas fa-sparkles"></i> วางแผนเงินให้ง่ายขึ้นทุกวัน</span>
+                <h1 class="login-title">ระบบรายรับ–รายจ่าย</h1>
+                <p class="login-subtitle">ของนัสซึคุง คุณชายสายเสมอ</p>
             </div>
 
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+            <form id="loginForm" onsubmit="handleLogin(event)" class="login-form">
                 <div>
-                    <label class="field-label"><i class="fas fa-envelope" style="color:#ec4899"></i> อีเมล</label>
-                    <div class="field-wrap">
-                        <i class="fas fa-envelope field-ico text-gray-400"></i>
-                        <input id="loginEmail" type="email" class="inp" placeholder="อีเมล" autocomplete="username" required>
+                    <label class="login-label" for="loginEmail"><i class="fas fa-envelope"></i> อีเมล</label>
+                    <div class="login-input-wrap">
+                        <i class="fas fa-envelope"></i>
+                        <input id="loginEmail" name="email" type="email" class="login-input" placeholder="name@example.com" autocomplete="email" required>
                     </div>
                 </div>
                 <div>
-                    <label class="field-label"><i class="fas fa-lock" style="color:#8b5cf6"></i> รหัสผ่าน</label>
-                    <div class="field-wrap">
-                        <i class="fas fa-lock field-ico text-gray-400"></i>
-                        <input id="loginPassword" type="password" class="inp" placeholder="รหัสผ่าน" autocomplete="current-password" required>
+                    <label class="login-label" for="loginPassword"><i class="fas fa-lock"></i> รหัสผ่าน</label>
+                    <div class="login-input-wrap">
+                        <i class="fas fa-lock"></i>
+                        <input id="loginPassword" name="password" type="password" class="login-input" placeholder="กรอกรหัสผ่าน" autocomplete="current-password" required>
                     </div>
                 </div>
-                <p id="loginErrorMsg" class="text-sm text-red-500 hidden"></p>
-                <button type="submit" class="w-full btn-ig py-3 rounded-xl font-bold shadow-md">
-                    <i class="fas fa-right-to-bracket mr-1"></i> เข้าสู่ระบบ
+                <p id="loginErrorMsg" class="hidden" role="alert" aria-live="polite"></p>
+                <button type="submit" class="login-submit">
+                    <i class="fas fa-right-to-bracket"></i> เข้าสู่ระบบ
                 </button>
             </form>
+            <p class="login-footnote"><i class="fas fa-chart-pie mr-1" style="color:#d65a6b"></i> บันทึกวันนี้ เพื่อเป้าหมายการเงินที่ดีขึ้น</p>
         </div>
     </div>
 
