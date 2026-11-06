@@ -16,26 +16,26 @@
         body {
             font-family: 'Sarabun', sans-serif;
             font-size: 16px;
-            color: #262626;
-            background-image: url('https://i.pinimg.com/1200x/8e/b2/27/8eb22742acb5e8f41f9499f2745a9c21.jpg');
+            color: #173653;
+            background-image: linear-gradient(135deg, rgba(15,43,78,.72), rgba(2,132,199,.52) 62%, rgba(201,151,49,.38)), url('https://i.pinimg.com/1200x/8e/b2/27/8eb22742acb5e8f41f9499f2745a9c21.jpg');
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
         }
         .content-wrapper {
-            background-color: rgba(255, 255, 255, 0.92);
+            background-color: rgba(248, 252, 255, 0.94);
             border-radius: 1.5rem;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             backdrop-filter: blur(5px);
         }
-        .bg-ig-gradient { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+        .bg-ig-gradient { background: linear-gradient(105deg, #123d66 0%, #168bd0 56%, #d6a63b 100%); }
         .text-ig {
-            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            background: linear-gradient(100deg, #164e78 0%, #0284c7 58%, #b78519 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         .btn-ig {
-            background: linear-gradient(45deg, #f09433 0%, #dc2743 50%, #bc1888 100%);
+            background: linear-gradient(105deg, #1d4ed8 0%, #0284c7 62%, #c39125 100%);
             color: white;
             transition: opacity 0.2s, transform 0.1s;
         }
@@ -52,10 +52,10 @@
         }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cc2366; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #168bd0; border-radius: 3px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
-        .nav-link.active { border-bottom: 3px solid #dc2743; color: #dc2743; font-weight: bold; }
+        .nav-link.active { border-bottom: 3px solid #1d4ed8; color: #1d4ed8; font-weight: bold; }
         .modal-backdrop { background-color: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
         .inp {
             width: 100%;
@@ -66,7 +66,7 @@
             transition: .15s;
             font-size: 0.875rem;
         }
-        .inp:focus { outline: none; border-color: #ec4899; box-shadow: 0 0 0 1px #ec4899; }
+        .inp:focus { outline: none; border-color: #38a9e5; box-shadow: 0 0 0 1px #38a9e5; }
         /* ---------- หน้าลงชื่อเข้าใช้ ---------- */
         .login-screen {
             overflow-y: auto;
@@ -181,6 +181,35 @@
             .login-card { animation: none; }
             .login-input, .login-submit { transition: none; }
         }
+        /* ธีมหลักทั้งเว็บไซต์: น้ำเงิน / ฟ้า / ทอง */
+        .btn-ig { box-shadow: 0 6px 16px rgba(29,78,216,.16); }
+        .btn-ig:hover { filter: saturate(1.08) brightness(1.02); }
+        .content-wrapper { border: 1px solid rgba(207,229,245,.8); }
+        .card-stat { background-color: rgba(250,253,255,.96); border-color: #d9e8f3; }
+        #appMain [class~="text-pink-300"], #appMain [class~="text-pink-400"],
+        #appMain [class~="text-pink-500"], #appMain [class~="text-pink-600"],
+        #appMain [class~="text-pink-700"], #appMain [class~="text-purple-400"],
+        #appMain [class~="text-purple-500"], #appMain [class~="text-purple-600"] { color: #168bd0 !important; }
+        #appMain [class~="bg-pink-50"], #appMain [class~="bg-pink-100"],
+        #appMain [class~="bg-purple-50"] { background-color: #eaf6ff !important; }
+        #appMain [class~="border-pink-100"], #appMain [class~="border-pink-200"],
+        #appMain [class~="border-purple-100"], #appMain [class~="border-purple-200"] { border-color: #cde8f7 !important; }
+        #appMain [class~="text-green-500"], #appMain [class~="text-green-600"], #appMain [class~="text-green-700"] { color: #087eae !important; }
+        #appMain [class~="bg-green-50"], #appMain [class~="bg-green-100"] { background-color: #eaf7fc !important; }
+        #appMain [class~="border-green-100"], #appMain [class~="border-green-200"], #appMain [class~="border-green-500"] { border-color: #83d2f2 !important; }
+        #appMain [class~="bg-green-500"], #appMain [class~="bg-green-600"] { background-color: #168bd0 !important; }
+        #appMain [class~="text-red-500"], #appMain [class~="text-red-600"], #appMain [class~="text-red-700"] { color: #9a7018 !important; }
+        #appMain [class~="bg-red-50"], #appMain [class~="bg-red-100"] { background-color: #fff8e7 !important; }
+        #appMain [class~="border-red-100"], #appMain [class~="border-red-200"], #appMain [class~="border-red-500"] { border-color: #edd28e !important; }
+        #appMain [class~="bg-red-500"], #appMain [class~="bg-red-600"] { background-color: #d6a63b !important; }
+        #appMain [class~="peer-checked:border-green-500"] { border-color: #38bdf8 !important; }
+        #appMain [class~="peer-checked:bg-green-50"] { background-color: #eaf6ff !important; }
+        #appMain [class~="peer-checked:text-green-700"] { color: #087eae !important; }
+        #appMain [class~="peer-checked:border-red-500"] { border-color: #d6a63b !important; }
+        #appMain [class~="peer-checked:bg-red-50"] { background-color: #fff8e7 !important; }
+        #appMain [class~="peer-checked:text-red-700"] { color: #9a7018 !important; }
+        #appMain button[onclick^="confirmDelete"], #appMain button[onclick^="removeStaged"] { background-color: #dc2626 !important; color: #fff !important; border-color: #fecaca !important; }
+        #appMain [class~="focus:border-pink-500"]:focus, #appMain [class~="focus:border-green-500"]:focus, #appMain [class~="focus:border-red-500"]:focus { border-color: #38a9e5 !important; box-shadow: 0 0 0 3px rgba(56,169,229,.15) !important; }
         .memo-chip {
             display: inline-flex; align-items: center; gap: .25rem;
             background: #f3f4f6; color: #4b5563;
@@ -750,7 +779,7 @@
             'fas fa-graduation-cap','fas fa-book','fas fa-shirt','fas fa-gamepad','fas fa-film',
             'fas fa-dumbbell','fas fa-paw','fas fa-heart','fas fa-gem','fas fa-tag'
         ];
-        const COLOR_SET = ['#10b981','#22c55e','#84cc16','#f59e0b','#f97316','#ef4444','#f43f5e','#ec4899','#d946ef','#a855f7','#8b5cf6','#6366f1','#3b82f6','#0ea5e9','#06b6d4','#14b8a6','#64748b','#111827'];
+        const COLOR_SET = ['#123d66','#164e78','#1d4ed8','#2563eb','#0284c7','#168bd0','#0ea5e9','#38bdf8','#7dd3fc','#b8e8fb','#8e6b1b','#b78519','#c39125','#d6a63b','#e7c66a','#f3dc9a'];
 
         // ---------- ระบบลงชื่อเข้าใช้งาน (Auth) ----------
         let authSession = null;
@@ -862,7 +891,7 @@
         let categories = { income: [], expense: [] };
         let stagedTransactions = [];
         let charts = { income: null, expense: null };
-        let picker = { income: { icon: 'fas fa-tag', color: '#10b981' }, expense: { icon: 'fas fa-tag', color: '#ef4444' } };
+        let picker = { income: { icon: 'fas fa-tag', color: '#168bd0' }, expense: { icon: 'fas fa-tag', color: '#d6a63b' } };
 
         let currentFilter = { year: new Date().getFullYear(), month: new Date().getMonth() + 1 };
         let currentPage = 1;
@@ -1025,12 +1054,19 @@
             });
         }
         function normalizeCategories(cats) {
-            const fix = function (arr) {
-                return (arr || []).map(function (c) {
+            const fix = function (arr, type) {
+                return (arr || []).map(function (c, index) {
                     if (typeof c === 'string') c = { name: c };
                     const style = getCategoryIconAndColor(c.name);
                     const icon = typeof c.icon === 'string' && /^fas fa-[a-z0-9-]+$/i.test(c.icon) ? c.icon : style.icon;
-                    const color = typeof c.color === 'string' && /^#[0-9a-f]{6}$/i.test(c.color) ? c.color : style.color;
+                    const savedColor = typeof c.color === 'string' && /^#[0-9a-f]{6}$/i.test(c.color) ? c.color.toLowerCase() : '';
+                    const legacyColors = ['#10b981','#f59e0b','#f97316','#3b82f6','#ef4444','#8b5cf6','#06b6d4','#eab308','#0ea5e9','#ec4899','#f43f5e','#14b8a6','#84cc16','#6366f1','#a855f7','#d946ef'];
+                    const palette = type === 'income'
+                        ? ['#123d66','#164e78','#1d4ed8','#2563eb','#0284c7','#168bd0','#0ea5e9','#38bdf8','#7dd3fc','#b8e8fb']
+                        : ['#8e6b1b','#b78519','#c39125','#d6a63b','#e7c66a','#f3dc9a'];
+                    const color = savedColor && COLOR_SET.indexOf(savedColor) !== -1
+                        ? savedColor
+                        : (savedColor && legacyColors.indexOf(savedColor) === -1 ? savedColor : palette[index % palette.length]);
                     return {
                         id: c.id || null,
                         name: String(c.name || ''),
@@ -1040,7 +1076,7 @@
                     };
                 });
             };
-            return { income: fix(cats && cats.income), expense: fix(cats && cats.expense) };
+            return { income: fix(cats && cats.income, 'income'), expense: fix(cats && cats.expense, 'expense') };
         }
 
         async function loadServerData() {
@@ -1702,21 +1738,21 @@
             if (found && found.icon && found.color) return { icon: found.icon, color: found.color };
 
             const lower = name.toLowerCase();
-            let icon = 'fas fa-tag', color = '#9ca3af';
-            if (lower.indexOf('เงินเดือน') !== -1) { icon = 'fas fa-money-bill-wave'; color = '#10b981'; }
-            else if (lower.indexOf('โบนัส') !== -1) { icon = 'fas fa-gift'; color = '#f59e0b'; }
-            else if (lower.indexOf('อาหาร') !== -1 || lower.indexOf('ข้าว') !== -1) { icon = 'fas fa-utensils'; color = '#f97316'; }
-            else if (lower.indexOf('น้ำมัน') !== -1 || lower.indexOf('เดินทาง') !== -1) { icon = 'fas fa-car'; color = '#3b82f6'; }
-            else if (lower.indexOf('สินเชื่อ') !== -1 || lower.indexOf('ผ่อน') !== -1) { icon = 'fas fa-credit-card'; color = '#ef4444'; }
-            else if (lower.indexOf('เน็ต') !== -1 || lower.indexOf('โทร') !== -1) { icon = 'fas fa-wifi'; color = '#8b5cf6'; }
-            else if (lower.indexOf('บ้าน') !== -1 || lower.indexOf('หอ') !== -1) { icon = 'fas fa-house'; color = '#06b6d4'; }
-            else if (lower.indexOf('ไฟ') !== -1) { icon = 'fas fa-bolt'; color = '#eab308'; }
-            else if (lower.indexOf('น้ำ') !== -1) { icon = 'fas fa-faucet'; color = '#0ea5e9'; }
-            else if (lower.indexOf('รักษา') !== -1 || lower.indexOf('ยา') !== -1) { icon = 'fas fa-pills'; color = '#ec4899'; }
-            else if (lower.indexOf('ช้อป') !== -1 || lower.indexOf('ซื้อ') !== -1) { icon = 'fas fa-shopping-bag'; color = '#f43f5e'; }
-            else if (lower.indexOf('ลงทุน') !== -1) { icon = 'fas fa-chart-line'; color = '#14b8a6'; }
+            let icon = 'fas fa-tag', color = '#168bd0';
+            if (lower.indexOf('เงินเดือน') !== -1) { icon = 'fas fa-money-bill-wave'; color = '#168bd0'; }
+            else if (lower.indexOf('โบนัส') !== -1) { icon = 'fas fa-gift'; color = '#d6a63b'; }
+            else if (lower.indexOf('อาหาร') !== -1 || lower.indexOf('ข้าว') !== -1) { icon = 'fas fa-utensils'; color = '#b78519'; }
+            else if (lower.indexOf('น้ำมัน') !== -1 || lower.indexOf('เดินทาง') !== -1) { icon = 'fas fa-car'; color = '#0284c7'; }
+            else if (lower.indexOf('สินเชื่อ') !== -1 || lower.indexOf('ผ่อน') !== -1) { icon = 'fas fa-credit-card'; color = '#c39125'; }
+            else if (lower.indexOf('เน็ต') !== -1 || lower.indexOf('โทร') !== -1) { icon = 'fas fa-wifi'; color = '#38bdf8'; }
+            else if (lower.indexOf('บ้าน') !== -1 || lower.indexOf('หอ') !== -1) { icon = 'fas fa-house'; color = '#0ea5e9'; }
+            else if (lower.indexOf('ไฟ') !== -1) { icon = 'fas fa-bolt'; color = '#e7c66a'; }
+            else if (lower.indexOf('น้ำ') !== -1) { icon = 'fas fa-faucet'; color = '#0284c7'; }
+            else if (lower.indexOf('รักษา') !== -1 || lower.indexOf('ยา') !== -1) { icon = 'fas fa-pills'; color = '#7dd3fc'; }
+            else if (lower.indexOf('ช้อป') !== -1 || lower.indexOf('ซื้อ') !== -1) { icon = 'fas fa-shopping-bag'; color = '#d6a63b'; }
+            else if (lower.indexOf('ลงทุน') !== -1) { icon = 'fas fa-chart-line'; color = '#168bd0'; }
             else {
-                const colors = ['#84cc16', '#0ea5e9', '#6366f1', '#a855f7', '#d946ef'];
+                const colors = ['#164e78', '#0284c7', '#168bd0', '#38bdf8', '#b78519', '#d6a63b'];
                 let hash = 0;
                 for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
                 color = colors[Math.abs(hash) % colors.length];
@@ -1754,7 +1790,7 @@
                     d.classList.add('sel');
                     iconBox.querySelectorAll('.icon-pick').forEach(function (x) { x.style.background = c; });
                 };
-                if ((type === 'income' && c === '#10b981') || (type === 'expense' && c === '#ef4444')) {
+                if ((type === 'income' && c === '#168bd0') || (type === 'expense' && c === '#d6a63b')) {
                     d.classList.add('sel'); picker[type].color = c;
                 }
                 colorBox.appendChild(d);
