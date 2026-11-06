@@ -1060,13 +1060,10 @@
                     const style = getCategoryIconAndColor(c.name);
                     const icon = typeof c.icon === 'string' && /^fas fa-[a-z0-9-]+$/i.test(c.icon) ? c.icon : style.icon;
                     const savedColor = typeof c.color === 'string' && /^#[0-9a-f]{6}$/i.test(c.color) ? c.color.toLowerCase() : '';
-                    const legacyColors = ['#10b981','#f59e0b','#f97316','#3b82f6','#ef4444','#8b5cf6','#06b6d4','#eab308','#0ea5e9','#ec4899','#f43f5e','#14b8a6','#84cc16','#6366f1','#a855f7','#d946ef'];
                     const palette = type === 'income'
                         ? ['#123d66','#164e78','#1d4ed8','#2563eb','#0284c7','#168bd0','#0ea5e9','#38bdf8','#7dd3fc','#b8e8fb']
                         : ['#8e6b1b','#b78519','#c39125','#d6a63b','#e7c66a','#f3dc9a'];
-                    const color = savedColor && COLOR_SET.indexOf(savedColor) !== -1
-                        ? savedColor
-                        : (savedColor && legacyColors.indexOf(savedColor) === -1 ? savedColor : palette[index % palette.length]);
+                    const color = savedColor && COLOR_SET.indexOf(savedColor) !== -1 ? savedColor : palette[index % palette.length];
                     return {
                         id: c.id || null,
                         name: String(c.name || ''),
