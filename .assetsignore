@@ -1,2 +1,6 @@
 wrangler.jsonc
 .assetsignore
+.git/
+.git/**
+index.txt
+public/**
