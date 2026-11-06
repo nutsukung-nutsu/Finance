@@ -71,7 +71,7 @@
         .login-screen {
             overflow-y: auto;
             background-image:
-                linear-gradient(135deg, rgba(255, 247, 237, .10), rgba(131, 24, 67, .18)),
+                linear-gradient(135deg, rgba(15, 43, 78, .78), rgba(2, 132, 199, .64) 56%, rgba(201, 151, 49, .42)),
                 url('https://i.pinimg.com/1200x/8e/b2/27/8eb22742acb5e8f41f9499f2745a9c21.jpg');
             background-size: cover;
             background-position: center;
@@ -82,7 +82,7 @@
             position: fixed;
             inset: 0;
             pointer-events: none;
-            background: radial-gradient(ellipse at 50% 45%, rgba(255,255,255,.05), rgba(71, 24, 50, .18));
+            background: radial-gradient(ellipse at 50% 42%, rgba(125, 211, 252, .10), rgba(11, 38, 71, .22));
         }
         .login-card {
             position: relative;
@@ -92,8 +92,8 @@
             overflow: hidden;
             border: 1px solid rgba(255,255,255,.82);
             border-radius: 28px;
-            background: rgba(255, 253, 250, .94);
-            box-shadow: 0 28px 80px rgba(73, 25, 49, .28), 0 4px 16px rgba(73, 25, 49, .10);
+            background: rgba(250, 253, 255, .95);
+            box-shadow: 0 28px 80px rgba(12, 39, 70, .30), 0 4px 16px rgba(12, 39, 70, .12);
             backdrop-filter: blur(18px);
             animation: loginRise .55s cubic-bezier(.2,.75,.25,1) both;
         }
@@ -102,16 +102,16 @@
             position: absolute;
             inset: 0 0 auto;
             height: 5px;
-            background: linear-gradient(90deg, #f6a23a 0%, #ef6658 48%, #c02670 100%);
+            background: linear-gradient(90deg, #d6a63b 0%, #38bdf8 48%, #1d4ed8 100%);
         }
         .login-logo {
             width: 72px;
             height: 72px;
             padding: 4px;
-            border: 1px solid #f5d9cd;
+            border: 1px solid #ecd58f;
             border-radius: 22px;
             background: #fff;
-            box-shadow: 0 8px 20px rgba(192, 38, 112, .14);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, .14);
             object-fit: contain;
         }
         .login-kicker {
@@ -119,33 +119,34 @@
             align-items: center;
             gap: 7px;
             margin-top: 16px;
-            color: #a24b5e;
+            color: #2876a8;
             font-size: 12px;
             font-weight: 700;
             letter-spacing: .02em;
         }
-        .login-title { margin-top: 5px; color: #4c2639; font-size: 22px; line-height: 1.35; font-weight: 700; }
-        .login-subtitle { margin-top: 4px; color: #806c78; font-size: 14px; }
+        .login-kicker i { color: #c39125; }
+        .login-title { margin-top: 5px; color: #173653; font-size: 22px; line-height: 1.35; font-weight: 700; }
+        .login-subtitle { margin-top: 4px; color: #617b91; font-size: 14px; }
         .login-form { margin-top: 28px; display: grid; gap: 18px; text-align: left; }
-        .login-label { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; color: #4c3a47; font-size: 14px; font-weight: 600; }
-        .login-label i { width: 18px; color: #d65a6b; text-align: center; }
+        .login-label { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; color: #284962; font-size: 14px; font-weight: 600; }
+        .login-label i { width: 18px; color: #1686c9; text-align: center; }
         .login-input-wrap { position: relative; }
-        .login-input-wrap > i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #a697a0; pointer-events: none; }
+        .login-input-wrap > i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #7b94a9; pointer-events: none; }
         .login-input {
             width: 100%;
             height: 52px;
             padding: 0 14px 0 44px;
-            border: 1px solid #eadde1;
+            border: 1px solid #cbdfee;
             border-radius: 14px;
             outline: none;
-            background: #fffaf8;
-            color: #3c2b36;
+            background: #f5faff;
+            color: #173653;
             font: inherit;
             font-size: 15px;
             transition: border-color .18s, box-shadow .18s, background .18s;
         }
-        .login-input::placeholder { color: #aa9da4; }
-        .login-input:focus { border-color: #dc6870; background: #fff; box-shadow: 0 0 0 4px rgba(220,104,112,.14); }
+        .login-input::placeholder { color: #8096a9; }
+        .login-input:focus { border-color: #38a9e5; background: #fff; box-shadow: 0 0 0 4px rgba(56,189,248,.18); }
         .login-submit {
             display: flex;
             min-height: 52px;
@@ -155,8 +156,8 @@
             gap: 10px;
             border: 0;
             border-radius: 15px;
-            background: linear-gradient(105deg, #ed9638 0%, #e75f55 52%, #c02670 100%);
-            box-shadow: 0 10px 20px rgba(192,38,112,.20);
+            background: linear-gradient(105deg, #2563eb 0%, #168bd0 58%, #0284c7 100%);
+            box-shadow: 0 10px 20px rgba(37,99,235,.24), inset 0 1px 0 rgba(255,255,255,.18);
             color: white;
             font: inherit;
             font-size: 16px;
@@ -164,11 +165,12 @@
             cursor: pointer;
             transition: transform .18s, box-shadow .18s, filter .18s;
         }
-        .login-submit:hover { transform: translateY(-1px); box-shadow: 0 13px 24px rgba(192,38,112,.25); filter: saturate(1.08); }
+        .login-submit i { color: #f5d269; }
+        .login-submit:hover { transform: translateY(-1px); box-shadow: 0 13px 24px rgba(37,99,235,.30); filter: saturate(1.08); }
         .login-submit:active { transform: translateY(0); }
-        .login-submit:focus-visible { outline: 3px solid rgba(192,38,112,.3); outline-offset: 3px; }
+        .login-submit:focus-visible { outline: 3px solid rgba(212,161,43,.72); outline-offset: 3px; }
         .login-submit:disabled { cursor: wait; opacity: .75; transform: none; }
-        .login-footnote { margin-top: 20px; color: #8c7b84; font-size: 12px; text-align: center; }
+        .login-footnote { margin-top: 20px; color: #68839a; font-size: 12px; text-align: center; }
         #loginErrorMsg:not(.hidden) { padding: 10px 12px; border: 1px solid #f4c9c7; border-radius: 12px; background: #fff1ef; color: #a33b40; }
         @keyframes loginRise { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @media (max-width: 480px) {
@@ -244,7 +246,7 @@
                     <i class="fas fa-right-to-bracket"></i> เข้าสู่ระบบ
                 </button>
             </form>
-            <p class="login-footnote"><i class="fas fa-chart-pie mr-1" style="color:#d65a6b"></i> บันทึกวันนี้ เพื่อเป้าหมายการเงินที่ดีขึ้น</p>
+            <p class="login-footnote"><i class="fas fa-chart-pie mr-1" style="color:#c39125"></i> บันทึกวันนี้ เพื่อเป้าหมายการเงินที่ดีขึ้น</p>
         </div>
     </div>
 
