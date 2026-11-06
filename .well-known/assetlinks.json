@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "dev.workers.soatsanitkub.finance.twa",
+        "sha256_cert_fingerprints": ["19:03:21:A5:30:B4:07:A8:91:F7:BE:63:D3:47:3A:22:16:78:05:50:8E:54:40:85:B5:96:A6:F9:CE:70:B9:26"]
+      }
+    }]
