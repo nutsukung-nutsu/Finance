@@ -1,6 +1,6 @@
 -- Schema for the Finance app. Run in Supabase SQL Editor.
 create table if not exists public.finance_transactions (
-    id uuid primary key default gen_random_uuid(),
+    id text primary key default gen_random_uuid()::text,
     user_id uuid not null references auth.users(id) on delete cascade,
     type text not null check (type in ('income', 'expense')),
     transaction_date date not null,

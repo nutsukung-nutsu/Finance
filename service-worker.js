@@ -1,10 +1,11 @@
-const CACHE_NAME = 'finance-shell-v1';
+const CACHE_NAME = 'finance-shell-v2';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
   '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/icons/icon-512.png',
+  '/icons/icon-512-maskable.png'
 ];
 
 self.addEventListener('install', function (event) {
