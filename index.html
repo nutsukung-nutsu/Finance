@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบรายรับ-รายจ่าย ของนัสซึคุง คุณชายสายเสมอ</title>
+    <meta name="theme-color" content="#123d66">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="รายรับรายจ่าย">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -279,12 +284,12 @@
         </div>
     </div>
 
-    <!-- ================= Pop Up ดาวน์โหลด .apk ================= -->
+    <!-- ================= Pop Up ติดตั้งแอป ================= -->
     <div id="appDownloadModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop transition-opacity p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden max-h-[92vh] overflow-y-auto">
             <div class="bg-ig-gradient p-4 text-center text-white relative">
-                <h3 class="text-xl font-bold"><i class="fab fa-android mr-1"></i> ดาวน์โหลดแอปพลิเคชัน</h3>
-                <p class="text-xs opacity-90 mt-1">ไฟล์ติดตั้ง Android (.apk)</p>
+                <h3 class="text-xl font-bold"><i class="fas fa-mobile-alt mr-1"></i> ติดตั้งแอปพลิเคชัน</h3>
+                <p class="text-xs opacity-90 mt-1">ใช้ได้บน Android, iPhone และ iPad</p>
                 <button onclick="closeAppModal()" class="absolute top-4 right-4 text-white hover:text-gray-200"><i class="fas fa-times text-xl"></i></button>
             </div>
 
@@ -292,32 +297,30 @@
                 <img src="https://i.pinimg.com/1200x/11/e5/a8/11e5a8444570658f24d1e9349f5b501d.jpg" class="h-20 w-20 mx-auto rounded-2xl shadow-lg border border-gray-100 bg-white object-contain" alt="App Icon">
                 <div>
                     <p class="font-bold text-gray-800">นัสซึคุง คุณชายสายเสมอ</p>
-                    <p class="text-xs text-gray-500" id="apkMeta">เวอร์ชัน 1.0.0 · ขนาดประมาณ 12 MB · Android 7.0 ขึ้นไป</p>
+                    <p class="text-xs text-gray-500" id="apkMeta">ติดตั้งจากเว็บไซต์โดยตรง ไม่ต้องดาวน์โหลดไฟล์ APK</p>
                 </div>
 
                 <!-- QR Code -->
                 <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3">
                     <img id="apkQr" src="" alt="QR" class="w-24 h-24 rounded-lg bg-white border border-gray-200 shrink-0">
                     <div class="text-left text-xs text-gray-600">
-                        <p class="font-bold text-gray-700 mb-1"><i class="fas fa-qrcode text-pink-500"></i> สแกนโหลดจากมือถือ</p>
-                        <p>เปิดกล้องมือถือสแกน QR นี้ เพื่อดาวน์โหลดไฟล์ .apk ได้ทันที</p>
-                        <button onclick="copyApkLink()" class="mt-2 text-[11px] bg-white border border-gray-300 px-2 py-1 rounded-md hover:bg-gray-100"><i class="fas fa-copy text-blue-500"></i> คัดลอกลิงก์</button>
+                        <p class="font-bold text-gray-700 mb-1"><i class="fas fa-qrcode text-blue-500"></i> เปิดแอปบนมือถือ</p>
+                        <p>สแกน QR เพื่อเปิดระบบ จากนั้นเลือก “ติดตั้งแอป” หรือ “เพิ่มไปยังหน้าจอโฮม”</p>
+                        <button onclick="copyApkLink()" class="mt-2 text-[11px] bg-white border border-gray-300 px-2 py-1 rounded-md hover:bg-gray-100"><i class="fas fa-copy text-blue-500"></i> คัดลอกลิงก์เว็บไซต์</button>
                     </div>
                 </div>
 
-                <!-- ปุ่มดาวน์โหลด -->
-                <a id="apkLink" href="#" download="NatsuKung-Finance.apk"
-                   class="w-full bg-[#3DDC84] text-white py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#32b86e] transition font-bold shadow-md text-lg">
-                    <i class="fas fa-download text-xl"></i> ดาวน์โหลด .apk
-                </a>
+                <!-- ปุ่มติดตั้ง PWA บน Android; บนอุปกรณ์อื่นแสดงขั้นตอนด้านล่าง -->
+                <button id="pwaInstallButton" onclick="installFinanceApp()" class="hidden w-full bg-[#168bd0] text-white py-3 px-4 rounded-xl items-center justify-center gap-2 hover:bg-[#087eae] transition font-bold shadow-md text-lg">
+                    <i class="fas fa-download text-xl"></i> ติดตั้งแอปบนอุปกรณ์นี้
+                </button>
 
                 <!-- วิธีติดตั้ง -->
                 <div class="text-left bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1">
-                    <p class="font-bold"><i class="fas fa-circle-info"></i> วิธีติดตั้งไฟล์ .apk</p>
-                    <p>1. กดดาวน์โหลดแล้วเปิดไฟล์จากแถบแจ้งเตือน หรือโฟลเดอร์ Download</p>
-                    <p>2. หากขึ้นเตือน ให้เปิดสิทธิ์ <b>"ติดตั้งแอปที่ไม่รู้จัก"</b> ให้กับเบราว์เซอร์ที่ใช้</p>
-                    <p>3. กด <b>ติดตั้ง</b> แล้วรอจนเสร็จ เปิดใช้งานได้เลย</p>
-                    <p class="text-[11px] text-amber-600">* รองรับเฉพาะ Android — ผู้ใช้ iOS กรุณาใช้งานผ่านเว็บเบราว์เซอร์</p>
+                    <p class="font-bold"><i class="fas fa-circle-info"></i> วิธีติดตั้ง</p>
+                    <p><b>Android:</b> เปิดด้วย Chrome แล้วแตะ “ติดตั้งแอป” หรือเมนู ⋮ → “ติดตั้งแอป/เพิ่มไปยังหน้าจอหลัก”</p>
+                    <p><b>iPhone/iPad:</b> เปิดด้วย Safari → แตะ แชร์ → “เพิ่มไปยังหน้าจอโฮม” → เปิด “Open as Web App” → เพิ่ม</p>
+                    <p class="text-[11px] text-amber-700">ต้องเชื่อมต่ออินเทอร์เน็ตเพื่อเข้าสู่ระบบและซิงค์ข้อมูลกับ Supabase</p>
                 </div>
 
                 <div class="flex gap-2">
@@ -342,7 +345,7 @@
             </div>
             <img src="https://i.pinimg.com/1200x/11/e5/a8/11e5a8444570658f24d1e9349f5b501d.jpg" alt="Logo" class="h-12 w-12 rounded-full object-cover bg-white shadow-sm border-2 border-white">
             <h1 class="font-bold m-0 text-lg">ระบบรายรับ-รายจ่าย ของนัสซึคุง คุณชายสายเสมอ</h1>
-            <button onclick="openAppModal()" title="ดาวน์โหลดแอป (.apk)" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/35 border border-white/40 rounded-full w-10 h-10 flex items-center justify-center transition">
+            <button onclick="openAppModal()" title="ติดตั้งแอป" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/35 border border-white/40 rounded-full w-10 h-10 flex items-center justify-center transition">
                 <i class="fas fa-mobile-screen-button"></i>
             </button>
         </div>
@@ -759,12 +762,8 @@
             ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
             : null;
 
-        // >>> ลิงก์ไฟล์ .apk (อัปโหลดไฟล์ไว้ใน Google Drive แล้วแชร์แบบ "ทุกคนที่มีลิงก์") <<<
-        // รูปแบบลิงก์ดาวน์โหลดตรง: https://drive.google.com/uc?export=download&id=FILE_ID
-        const APK_URL      = "https://drive.google.com/file/d/1FYJrXFlKAlL9pKoPBULkVlt9ugb_nRhB/view?usp=sharing";
-        const APK_FILENAME = "NatsuKung-Finance-v1.0.0.apk";
-        const APK_VERSION  = "1.0.0";
-        const APK_SIZE     = "12 MB";
+        const APP_URL = window.location.origin + '/';
+        let deferredInstallPrompt = null;
 
         const TH_MONTH_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
         const TH_MONTH_FULL  = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
@@ -953,17 +952,32 @@
             Swal.fire({ title: 'รับทราบ', text: 'กดไอคอนมือถือมุมขวาบนเพื่อเปิดหน้าดาวน์โหลดได้ทุกเมื่อ', icon: 'info', timer: 2200, showConfirmButton: false });
         }
         function setupApkUI() {
-            const link = document.getElementById('apkLink');
-            link.href = APK_URL;
-            link.setAttribute('download', APK_FILENAME);
-            document.getElementById('apkMeta').innerText = 'เวอร์ชัน ' + APK_VERSION + ' · ขนาดประมาณ ' + APK_SIZE + ' · Android 7.0 ขึ้นไป';
-            document.getElementById('apkQr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(APK_URL);
+            document.getElementById('apkMeta').innerText = 'ติดตั้งจากเว็บไซต์โดยตรง ไม่ต้องดาวน์โหลดไฟล์ APK';
+            document.getElementById('apkQr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(APP_URL);
+            updatePwaInstallButton();
         }
         function copyApkLink() {
             const doneMsg = function () { Swal.fire({ title: 'คัดลอกลิงก์แล้ว', icon: 'success', timer: 1200, showConfirmButton: false }); };
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(APK_URL).then(doneMsg).catch(function () { fallbackCopy(APK_URL); doneMsg(); });
-            } else { fallbackCopy(APK_URL); doneMsg(); }
+                navigator.clipboard.writeText(APP_URL).then(doneMsg).catch(function () { fallbackCopy(APP_URL); doneMsg(); });
+            } else { fallbackCopy(APP_URL); doneMsg(); }
+        }
+        function updatePwaInstallButton() {
+            const button = document.getElementById('pwaInstallButton');
+            if (!button) return;
+            const canPrompt = !!deferredInstallPrompt;
+            button.classList.toggle('hidden', !canPrompt);
+            button.classList.toggle('flex', canPrompt);
+        }
+        async function installFinanceApp() {
+            if (!deferredInstallPrompt) {
+                Swal.fire('ติดตั้งผ่านเมนูเบราว์เซอร์', 'Android ใช้ Chrome แล้วเลือกเมนู ⋮ → ติดตั้งแอป หรือเพิ่มไปยังหน้าจอหลัก', 'info');
+                return;
+            }
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            updatePwaInstallButton();
         }
         function fallbackCopy(text) {
             const ta = document.createElement('textarea');
@@ -973,6 +987,9 @@
         }
         // ---------- Init ----------
         async function initializeApp() {
+            if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+                navigator.serviceWorker.register('/service-worker.js').catch(function (error) { console.warn('PWA worker registration failed', error); });
+            }
             // ลบ cache และ token ของ Apps Script รุ่นก่อนซึ่งไม่ถูกใช้งานแล้ว
             localStorage.removeItem('natsu_cached_data_v3');
             localStorage.removeItem('natsu_auth_session_v1');
@@ -999,6 +1016,16 @@
                 }
             });
         }
+        window.addEventListener('beforeinstallprompt', function (event) {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            updatePwaInstallButton();
+        });
+        window.addEventListener('appinstalled', function () {
+            deferredInstallPrompt = null;
+            updatePwaInstallButton();
+            closeAppModal();
+        });
         initializeApp();
 
         window.onload = function () {
