@@ -302,7 +302,7 @@
                 <img src="/icons/icon-192-v4.png" class="h-20 w-20 mx-auto rounded-2xl shadow-lg border border-gray-100 bg-white object-cover" alt="ไอคอนแอปรายรับรายจ่าย">
                 <div>
                     <p class="font-bold text-gray-800">นัสซึคุง คุณชายสายเสมอ</p>
-                    <p class="text-xs text-gray-500" id="apkMeta">เวอร์ชัน 1.0.0 · Android 7.0 ขึ้นไป</p>
+                    <p class="text-xs text-gray-500" id="apkMeta">เวอร์ชัน 1.0.1 · Android 7.0 ขึ้นไป</p>
                 </div>
 
                 <!-- QR Code -->
@@ -315,7 +315,7 @@
                     </div>
                 </div>
 
-                <a id="apkLink" href="/downloads/NatsuKung-Finance-v1.0.0.apk" download="NatsuKung-Finance-v1.0.0.apk"
+                <a id="apkLink" href="/downloads/NatsuKung-Finance-v1.0.1.apk" download="NatsuKung-Finance-v1.0.1.apk"
                    class="btn-ig w-full py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition font-bold shadow-md text-lg">
                     <i class="fas fa-download text-xl"></i> ดาวน์โหลด .apk สำหรับ Android
                 </a>
@@ -834,7 +834,7 @@
             : null;
 
         const APP_URL = window.location.origin + '/';
-        const APK_FILENAME = 'NatsuKung-Finance-v1.0.0.apk';
+        const APK_FILENAME = 'NatsuKung-Finance-v1.0.1.apk';
         const APK_URL = APP_URL + 'downloads/' + APK_FILENAME;
         let deferredInstallPrompt = null;
 
@@ -1090,7 +1090,7 @@
         function setupApkUI() {
             document.getElementById('apkLink').href = APK_URL;
             document.getElementById('apkLink').setAttribute('download', APK_FILENAME);
-            document.getElementById('apkMeta').innerText = 'เวอร์ชัน 1.0.0 · ขนาดประมาณ 1.1 MB · Android 7.0 ขึ้นไป';
+            document.getElementById('apkMeta').innerText = 'เวอร์ชัน 1.0.1 · ขนาดประมาณ 4.0 MB · Android 7.0 ขึ้นไป';
             document.getElementById('apkQr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(APK_URL);
             updatePwaInstallButton();
         }
